@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#3b82f6">
+<title>Abby 單字練習 v6</title>
+<style>
+:root {
+  --bg: #f8f9fa; --bg2: #ffffff; --bg3: #f0f4f8;
+  --border: #e2e8f0; --border2: #cbd5e1;
+  --text: #1e293b; --text2: #475569; --text3: #94a3b8;
+  --blue: #3b82f6; --blue-bg: #eff6ff; --blue-text: #1d4ed8;
+  --green: #22c55e; --green-bg: #f0fdf4; --green-text: #15803d;
+  --red: #ef4444; --red-bg: #fef2f2; --red-text: #b91c1c;
+  --yellow: #f59e0b; --yellow-bg: #fffbeb; --yellow-text: #92400e;
+  --purple: #8b5cf6; --purple-bg: #f5f3ff; --purple-text: #6d28d9;
+  --radius: 10px; --radius-sm: 6px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.app { max-width: 720px; margin: 0 auto; padding: 16px 16px 40px; }
+
+/* NAV */
+.nav { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+.nav-btn { padding: 8px 14px; border-radius: 99px; border: 1.5px solid var(--border2); font-size: 13px; font-weight: 500; cursor: pointer; background: var(--bg2); color: var(--text2); transition: all .15s; }
+.nav-btn.on { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+/* PAGES */
+.page { display: none; } .page.on { display: block; }
+
+/* CARDS */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; box-shadow: var(--shadow); }
+.card-title { font-size: 13px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 12px; }
+
+/* PROGRESS */
+.prog-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.prog-wrap { flex: 1; background: var(--bg3); border-radius: 99px; height: 6px; }
+.prog-fill { height: 6px; border-radius: 99px; background: var(--blue); transition: width .4s; }
+.prog-label { font-size: 12px; color: var(--text3); white-space: nowrap; }
+.score-badge { font-size: 20px; font-weight: 700; color: var(--text); }
+
+/* QUESTION */
+.q-sentence { font-size: 17px; line-height: 1.75; color: var(--text); margin-bottom: 8px; }
+.q-zh { font-size: 13px; color: var(--text2); margin-bottom: 14px; }
+.blank { display: inline-block; min-width: 80px; border-bottom: 2.5px solid var(--blue); color: var(--text3); font-style: italic; padding: 0 4px; }
+
+/* OPTIONS */
+.opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.opt { padding: 13px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border2); font-size: 15px; cursor: pointer; background: var(--bg3); color: var(--text); text-align: left; transition: all .12s; font-family: inherit; }
+.opt:hover:not(:disabled) { border-color: var(--blue); background: var(--blue-bg); color: var(--blue-text); }
+.opt.ok { background: var(--green-bg) !important; color: var(--green-text) !important; border-color: var(--green) !important; }
+.opt.no { background: var(--red-bg) !important; color: var(--red-text) !important; border-color: var(--red) !important; }
+.opt:disabled { cursor: default; }
+
+/* TF */
+.tf-row { display: flex; gap: 10px; margin-bottom: 8px; }
+.tf-btn { flex: 1; padding: 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border2); font-size: 15px; font-weight: 500; cursor: pointer; background: var(--bg3); color: var(--text); transition: all .12s; font-family: inherit; }
+.tf-btn:hover:not(:disabled) { border-color: var(--blue); background: var(--blue-bg); }
+.tf-btn.ok { background: var(--green-bg); color: var(--green-text); border-color: var(--green); }
+.tf-btn.no { background: var(--red-bg); color: var(--red-text); border-color: var(--red); }
+
+/* FEEDBACK */
+.feedback { padding: 12px 14px; border-radius: var(--radius-sm); font-size: 14px; line-height: 1.6; margin-top: 8px; display: none; }
+.feedback.ok { background: var(--green-bg); color: var(--green-text); border: 1px solid #86efac; display: block; }
+.feedback.no { background: var(--red-bg); color: var(--red-text); border: 1px solid #fca5a5; display: block; }
+
+/* QUESTION FOOTER */
+.qfoot { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+.next-btn { margin-left: auto; padding: 11px 22px; font-size: 15px; }
+.speak-note { font-size: 12px; color: var(--text3); }
+
+/* SPELL */
+.spell-word { font-size: 26px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.spell-hint-text { font-size: 13px; color: var(--text2); margin-bottom: 12px; }
+.spell-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.spell-inp { flex: 1; min-width: 140px; font-size: 16px; padding: 11px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border2); background: var(--bg3); color: var(--text); outline: none; font-family: inherit; }
+.spell-inp:focus { border-color: var(--blue); background: #fff; }
+.hint-letters { font-size: 14px; letter-spacing: 4px; font-family: 'Courier New', monospace; color: var(--text2); margin-top: 8px; min-height: 20px; }
+.warn-tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--yellow-bg); color: var(--yellow-text); border: 1px solid #fcd34d; margin-bottom: 8px; }
+
+/* MATCH */
+.match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mc { padding: 13px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border2); font-size: 14px; cursor: pointer; background: var(--bg3); color: var(--text); text-align: center; transition: all .15s; user-select: none; }
+.mc:hover:not(.mat) { border-color: var(--blue); }
+.mc.sel { background: var(--blue-bg); color: var(--blue-text); border-color: var(--blue); }
+.mc.mat { background: var(--green-bg); color: var(--green-text); border-color: var(--green); cursor: default; }
+.mc.shake { animation: shake .35s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+/* LISTEN */
+.listen-box { text-align: center; padding: 10px 0 4px; }
+.listen-big { width: 96px; height: 96px; border-radius: 50%; border: none; background: var(--blue); color: #fff; font-size: 40px; cursor: pointer; box-shadow: 0 4px 14px rgba(59,130,246,.4); transition: transform .12s; }
+.listen-big:active { transform: scale(.94); }
+.listen-big.playing { animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 4px 14px rgba(59,130,246,.4)} 50%{box-shadow:0 4px 26px rgba(59,130,246,.85)} }
+.listen-tip { font-size: 13px; color: var(--text2); margin-top: 10px; }
+
+/* MIC / SPEAK */
+.mic-btn { width: 110px; height: 110px; border-radius: 50%; border: none; background: var(--purple); color: #fff; font-size: 44px; cursor: pointer; box-shadow: 0 4px 14px rgba(139,92,246,.4); transition: transform .12s; }
+.mic-btn:active { transform: scale(.94); }
+.mic-btn.rec { background: var(--red); animation: pulseRed 1s infinite; }
+.mic-btn:disabled { background: var(--border2); box-shadow: none; cursor: default; }
+@keyframes pulseRed { 0%,100%{box-shadow:0 4px 14px rgba(239,68,68,.45)} 50%{box-shadow:0 4px 30px rgba(239,68,68,.9)} }
+.target-text { font-size: 22px; font-weight: 600; line-height: 1.6; margin-bottom: 6px; }
+.heard-text { font-size: 15px; color: var(--text2); margin-top: 10px; line-height: 1.6; }
+.score-ring { font-size: 34px; font-weight: 700; }
+
+/* BUTTONS */
+.btn { padding: 10px 20px; border-radius: var(--radius-sm); border: 1.5px solid var(--border2); font-size: 14px; font-weight: 500; cursor: pointer; background: var(--bg2); color: var(--text); transition: all .12s; font-family: inherit; }
+.btn:hover { border-color: var(--blue); color: var(--blue); }
+.btn-blue { background: var(--blue); color: #fff; border-color: var(--blue); }
+.btn-blue:hover { background: #2563eb; border-color: #2563eb; color: #fff; }
+.btn-sm { padding: 7px 14px; font-size: 12px; }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+/* TTS */
+.tts-btn { display: inline-flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: 99px; border: 1px solid var(--border2); font-size: 13px; cursor: pointer; background: var(--bg2); color: var(--text2); transition: all .12s; font-family: inherit; }
+.tts-btn:hover { border-color: var(--blue); color: var(--blue); }
+.tts-btn.speaking { background: var(--blue-bg); color: var(--blue-text); border-color: var(--blue); }
+
+/* STATS / WORD MANAGE */
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+.stat-box { background: var(--bg3); border-radius: var(--radius-sm); padding: 12px; text-align: center; }
+.stat-num { font-size: 26px; font-weight: 700; color: var(--blue); }
+.stat-label { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+.word-list { max-height: 360px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.word-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.word-row:last-child { border-bottom: none; }
+.word-en { font-weight: 600; font-size: 14px; }
+.word-zh { font-size: 13px; color: var(--text2); }
+.icon-btn { padding: 5px 9px; border-radius: 4px; border: 1px solid var(--border); font-size: 11px; cursor: pointer; background: var(--bg2); color: var(--text2); }
+.icon-btn:hover { border-color: var(--red); color: var(--red); }
+.badge-green { display: inline-block; font-size: 10px; padding: 1px 5px; border-radius: 99px; background: var(--green-bg); color: var(--green-text); border: 1px solid #86efac; }
+.badge-red { display: inline-block; font-size: 10px; padding: 1px 5px; border-radius: 99px; background: var(--red-bg); color: var(--red-text); border: 1px solid #fca5a5; }
+.badge-blue { display: inline-block; font-size: 10px; padding: 1px 5px; border-radius: 99px; background: var(--blue-bg); color: var(--blue-text); }
+
+/* FORM */
+.form-group { margin-bottom: 12px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 4px; display: block; }
+.form-input { width: 100%; padding: 11px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--border2); font-size: 16px; font-family: inherit; color: var(--text); background: var(--bg3); outline: none; }
+.form-input:focus { border-color: var(--blue); background: #fff; }
+.form-input.bad { border-color: var(--red); background: var(--red-bg); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+textarea.form-input { resize: vertical; min-height: 90px; line-height: 1.6; }
+.form-help { font-size: 11px; color: var(--text3); margin-top: 4px; line-height: 1.5; }
+
+/* TABS */
+.tab-row { display: flex; gap: 6px; margin-bottom: 14px; }
+.tab { flex: 1; text-align: center; padding: 9px; border-radius: var(--radius-sm); border: 1.5px solid var(--border2); font-size: 13px; font-weight: 500; cursor: pointer; background: var(--bg2); color: var(--text2); }
+.tab.on { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+/* CHECK RESULT LIST */
+.chk-item { display: flex; gap: 8px; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; line-height: 1.5; }
+.chk-item:last-child { border-bottom: none; }
+.chk-en { font-weight: 600; min-width: 92px; }
+.chk-msg { flex: 1; color: var(--text2); }
+.chk-bad .chk-en { color: var(--red-text); text-decoration: line-through; }
+.chk-bad .chk-msg { color: var(--red-text); }
+.chk-warn .chk-msg { color: var(--yellow-text); }
+
+/* END SCREEN */
+.end-screen { text-align: center; padding: 2rem 1rem; }
+.end-score { font-size: 52px; font-weight: 700; color: var(--text); }
+.end-msg { font-size: 15px; color: var(--text2); margin: 8px 0 6px; }
+.end-detail { font-size: 13px; color: var(--text3); margin-bottom: 1.5rem; }
+
+/* MISSED WORDS */
+.missed-list { margin-top: 12px; }
+.missed-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.missed-en { font-weight: 600; min-width: 100px; color: var(--red-text); }
+.missed-zh { color: var(--text2); flex: 1; }
+
+/* MODE SELECT */
+.mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.mode-card { padding: 14px 10px; border-radius: var(--radius); border: 2px solid var(--border); cursor: pointer; text-align: center; transition: all .15s; background: var(--bg2); }
+.mode-card:hover { border-color: var(--blue); }
+.mode-card.on { border-color: var(--blue); background: var(--blue-bg); }
+.mode-icon { font-size: 26px; margin-bottom: 6px; }
+.mode-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.mode-desc { font-size: 11px; color: var(--text2); margin-top: 3px; }
+
+/* SECTION TITLE */
+.sec-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.sec-sub { font-size: 13px; color: var(--text2); margin-bottom: 16px; }
+hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+/* FILTER */
+.filter-row { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.filter-chip { padding: 6px 13px; border-radius: 99px; border: 1px solid var(--border2); font-size: 12px; cursor: pointer; background: var(--bg2); color: var(--text2); }
+.filter-chip.on { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+/* SEARCH */
+.search-inp { width: 100%; padding: 11px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--border2); font-size: 16px; font-family: inherit; color: var(--text); background: var(--bg3); outline: none; margin-bottom: 10px; }
+.search-inp:focus { border-color: var(--blue); background: #fff; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 11px 20px; border-radius: 99px; font-size: 13px; z-index: 999; display: none; box-shadow: 0 4px 12px rgba(0,0,0,.2); max-width: 90vw; text-align: center; }
+.toast.show { display: block; animation: fadeInUp .25s; }
+@keyframes fadeInUp { from{opacity:0;transform:translateX(-50%) translateY(10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+
+/* MOBILE */
+@media (max-width: 480px) {
+  .app { padding: 12px 12px 40px; }
+  .q-sentence { font-size: 16px; }
+  .mode-icon { font-size: 22px; }
+  .mode-name { font-size: 12px; }
+  .mode-desc { display: none; }
+  .form-row { grid-template-columns: 1fr; }
+  .stat-num { font-size: 22px; }
+  .card { padding: 16px; }
+  .next-btn { width: 100%; margin-left: 0; }
+  .target-text { font-size: 19px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;">
+    <div>
+      <div style="font-size:20px;font-weight:700;color:var(--text)">Abby 單字練習</div>
+      <div style="font-size:12px;color:var(--text3)" id="total-count">載入中...</div>
+    </div>
+    <button class="tts-btn" onclick="testTTS()" id="tts-status">🔊 測試發音</button>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn on" onclick="goPage('home')">🎮 練習</button>
+    <button class="nav-btn" onclick="goPage('speak')">🎤 口說</button>
+    <button class="nav-btn" onclick="goPage('manage')">📝 單字管理</button>
+    <button class="nav-btn" onclick="goPage('stats')">📊 學習統計</button>
+  </div>
+
+  <!-- ══════════ HOME ══════════ -->
+  <div class="page on" id="page-home">
+    <div id="home-select">
+      <div class="sec-title">選擇練習模式</div>
+      <div class="sec-sub">系統會自動依你的答題紀錄調整出題頻率</div>
+      <div class="mode-grid">
+        <div class="mode-card on" id="mode-fill" onclick="selMode('fill')">
+          <div class="mode-icon">✏️</div>
+          <div class="mode-name">填空遊戲</div>
+          <div class="mode-desc">看句子選正確單字</div>
+        </div>
+        <div class="mode-card" id="mode-tf" onclick="selMode('tf')">
+          <div class="mode-icon">✅</div>
+          <div class="mode-name">對錯判斷</div>
+          <div class="mode-desc">判斷句子是否正確</div>
+        </div>
+        <div class="mode-card" id="mode-spell" onclick="selMode('spell')">
+          <div class="mode-icon">🔤</div>
+          <div class="mode-name">拼字挑戰</div>
+          <div class="mode-desc">看中文拼出英文</div>
+        </div>
+        <div class="mode-card" id="mode-match" onclick="selMode('match')">
+          <div class="mode-icon">🃏</div>
+          <div class="mode-name">配對遊戲</div>
+          <div class="mode-desc">英文配中文意思</div>
+        </div>
+        <div class="mode-card" id="mode-lword" onclick="selMode('lword')">
+          <div class="mode-icon">👂</div>
+          <div class="mode-name">聽力・單字</div>
+          <div class="mode-desc">聽單字選出答案</div>
+        </div>
+        <div class="mode-card" id="mode-lsent" onclick="selMode('lsent')">
+          <div class="mode-icon">🎧</div>
+          <div class="mode-name">聽力・句子填空</div>
+          <div class="mode-desc">聽句子選出空格的字</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <div class="form-label">出題範圍</div>
+        <div class="filter-row" id="scope-filter">
+          <div class="filter-chip on" onclick="selScope('all',this)">全部單字</div>
+          <div class="filter-chip" onclick="selScope('weak',this)">需加強 ❗</div>
+          <div class="filter-chip" onclick="selScope('new',this)">新單字 🆕</div>
+          <div class="filter-chip" onclick="selScope('recent',this)">最近新增</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div class="form-label">換題時複誦次數（單字 + 完整句子各念幾次）</div>
+        <div class="filter-row" id="rep-filter">
+          <div class="filter-chip" onclick="selRepeat(0,this)">不複誦</div>
+          <div class="filter-chip" onclick="selRepeat(1,this)">1 次</div>
+          <div class="filter-chip" onclick="selRepeat(2,this)">2 次</div>
+          <div class="filter-chip on" onclick="selRepeat(3,this)">3 次</div>
+        </div>
+        <div class="form-help">答對會等念完自動換下一題；答錯會停下來，等你按「下一題」。隨時可按「跳過語音」。</div>
+      </div>
+
+      <button class="btn btn-blue" style="width:100%;padding:14px;font-size:16px;" onclick="startGame()">開始練習 →</button>
+    </div>
+    <div id="home-game" style="display:none;"></div>
+  </div>
+
+  <!-- ══════════ SPEAK ══════════ -->
+  <div class="page" id="page-speak">
+    <div id="speak-select">
+      <div class="sec-title">口說練習</div>
+      <div class="sec-sub">按麥克風念出畫面上的英文，系統會聽你念得對不對</div>
+      <div id="sr-warn" style="display:none;" class="card">
+        <div style="font-size:14px;line-height:1.7;color:var(--yellow-text);background:var(--yellow-bg);border:1px solid #fcd34d;border-radius:var(--radius-sm);padding:12px;">
+          ⚠️ 這個瀏覽器不支援語音辨識。<br>
+          請改用 <b>Chrome</b>（電腦 / Android）或 <b>Safari</b>（iPhone iOS 14.5 以上），並允許使用麥克風。
+        </div>
+      </div>
+      <div class="mode-grid">
+        <div class="mode-card on" id="sp-word" onclick="selSpMode('word')">
+          <div class="mode-icon">🗣️</div>
+          <div class="mode-name">念單字</div>
+          <div class="mode-desc">看單字念出來</div>
+        </div>
+        <div class="mode-card" id="sp-sent" onclick="selSpMode('sent')">
+          <div class="mode-icon">💬</div>
+          <div class="mode-name">念句子</div>
+          <div class="mode-desc">看完整句子念出來</div>
+        </div>
+      </div>
+      <div class="form-help" style="margin-bottom:14px;">
+        💡 小提醒：第一次按麥克風時，瀏覽器會問「是否允許使用麥克風」，請按「允許」。念的時候盡量安靜一點，念完停一下就會自動判斷。
+      </div>
+      <button class="btn btn-blue" style="width:100%;padding:14px;font-size:16px;" onclick="startSpeak()">開始口說練習 →</button>
+    </div>
+    <div id="speak-game" style="display:none;"></div>
+  </div>
+
+  <!-- ══════════ MANAGE ══════════ -->
+  <div class="page" id="page-manage">
+    <div class="sec-title">單字管理</div>
+    <div class="sec-sub">新增單字後會自動加入所有遊戲題庫</div>
+
+    <div class="card">
+      <div class="tab-row">
+        <div class="tab on" id="tab-one" onclick="selAddTab('one')">➕ 一次加一個</div>
+        <div class="tab" id="tab-many" onclick="selAddTab('many')">📋 一次加多個</div>
+      </div>
+
+      <!-- 單筆新增 -->
+      <div id="add-one">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">英文單字 *</label>
+            <input class="form-input" id="add-en" placeholder="例：beautiful" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" oninput="liveCheckEn()">
+            <div class="form-help" id="en-live"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">詞性（可不填）</label>
+            <input class="form-input" id="add-pos" placeholder="n / v / adj / adv">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">中文意思 *</label>
+          <input class="form-input" id="add-zh" placeholder="例：美麗的；漂亮的">
+        </div>
+        <div class="form-group">
+          <label class="form-label">提示（可不填）</label>
+          <input class="form-input" id="add-hint" placeholder="例：be__ 開頭，9個字母">
+        </div>
+        <div class="form-group">
+          <label class="form-label">例句（可不填，多句用 | 分隔）</label>
+          <textarea class="form-input" id="add-sentences" placeholder="例：She is a ___ girl.|What a ___ day!"></textarea>
+          <div class="form-help">空格請打三個底線 <code>___</code>。如果你直接把單字寫在句子裡，系統會自動幫你挖空。</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">注意事項（可不填）</label>
+          <input class="form-input" id="add-note" placeholder="例：注意：不是 beautifull">
+        </div>
+        <button class="btn btn-blue" onclick="checkOne()" style="width:100%;">檢查並新增 →</button>
+        <div id="one-result" style="margin-top:12px;"></div>
+      </div>
+
+      <!-- 批次新增 -->
+      <div id="add-many" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">一行一個單字</label>
+          <textarea class="form-input" id="bulk-text" style="min-height:170px;font-family:'Courier New',monospace;font-size:14px;" placeholder="apple, 蘋果&#10;book, 書, n&#10;happy, 快樂的, adj, I feel ___ today.|She looks ___."></textarea>
+          <div class="form-help">
+            格式：<b>英文, 中文, 詞性(可省略), 例句(可省略，多句用 | 分隔)</b><br>
+            用逗號分隔（中文全形逗號、Tab 也可以）。只填英文和中文也可以。
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn btn-blue" onclick="checkBulk()">檢查看看 →</button>
+          <button class="btn btn-sm" onclick="fillBulkExample()">看範例</button>
+        </div>
+        <div id="bulk-result" style="margin-top:14px;"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">單字列表</div>
+      <input class="search-inp" id="word-search" placeholder="🔍 搜尋單字（中英文都可以）..." oninput="renderWordList()">
+      <div class="filter-row">
+        <div class="filter-chip on" id="wf-all" onclick="setWordFilter('all',this)">全部</div>
+        <div class="filter-chip" id="wf-weak" onclick="setWordFilter('weak',this)">需加強</div>
+        <div class="filter-chip" id="wf-master" onclick="setWordFilter('master',this)">已熟練</div>
+        <div class="filter-chip" id="wf-custom" onclick="setWordFilter('custom',this)">自己新增</div>
+      </div>
+      <div class="word-list" id="word-list"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ STATS ══════════ -->
+  <div class="page" id="page-stats">
+    <div class="sec-title">學習統計</div>
+    <div class="sec-sub" id="stats-date">今日更新</div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-num" id="s-total">0</div><div class="stat-label">總單字數</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-master">0</div><div class="stat-label">已熟練</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-weak">0</div><div class="stat-label">需加強</div></div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-num" id="s-sessions">0</div><div class="stat-label">練習次數</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-correct">0</div><div class="stat-label">答對總數</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-streak">0</div><div class="stat-label">連續天數</div></div>
+    </div>
+    <div class="card" id="weak-words-card">
+      <div class="card-title">需要加強的單字</div>
+      <div id="weak-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">最近錯誤</div>
+      <div id="recent-errors"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📦 匯出 / 匯入學習紀錄</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6;">
+        將學習紀錄（答題統計＋自訂單字）存成 <code style="background:var(--bg3);padding:1px 5px;border-radius:4px;">.json</code> 檔案，換裝置或換瀏覽器時再匯入，進度不中斷。
+      </p>
+      <div style="margin-bottom:16px;">
+        <div class="form-label">匯出</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <button class="btn btn-blue" onclick="exportData()">⬇️ 匯出學習紀錄</button>
+          <span style="font-size:12px;color:var(--text3)" id="export-info"></span>
+        </div>
+        <p style="font-size:12px;color:var(--text3);margin-top:6px;">包含：答題統計、自訂單字、錯誤紀錄。</p>
+      </div>
+      <hr>
+      <div>
+        <div class="form-label">匯入</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <label class="btn" style="cursor:pointer;">
+            ⬆️ 選擇 .json 檔案
+            <input type="file" id="import-file" accept=".json,application/json" style="display:none;" onchange="importData(this)">
+          </label>
+          <span style="font-size:12px;color:var(--text3)" id="import-info"></span>
+        </div>
+        <div id="import-preview" style="display:none;margin-top:12px;padding:12px;background:var(--yellow-bg);border:1px solid #fcd34d;border-radius:var(--radius-sm);">
+          <div style="font-size:13px;font-weight:600;color:var(--yellow-text);margin-bottom:6px;">📋 匯入預覽</div>
+          <div id="import-preview-content" style="font-size:13px;color:var(--text2);"></div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button class="btn btn-blue btn-sm" onclick="confirmImport()">確認匯入</button>
+            <button class="btn btn-sm" onclick="cancelImport()">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:8px;">
+      <button class="btn" style="color:var(--red-text);border-color:var(--red);" onclick="confirmReset()">重置所有統計資料</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA — 每個單字多組例句，出題時隨機抽
+// ═══════════════════════════════════════════════════════
+var BUILTIN = [
+  {e:"reach",zh:"到達；搆到",pos:"v",hint:"re__ 5字母",sentences:["Can you ___ the salt from the other end of the table?","She finally managed to ___ the top of the mountain.","He stood on his toes to ___ the high shelf.","The hiker could not ___ the camp before dark."],opts:["reach","carry","cross","land"]},
+  {e:"carry",zh:"攜帶；搬運",pos:"v",hint:"ca__ 5字母",sentences:["She had to ___ three heavy bags up the stairs.","He always ___ a small notebook in his pocket.","Can you help me ___ these boxes to the car?","The workers ___ the furniture into the new office."],opts:["carry","reach","throw","build"]},
+  {e:"appear",zh:"出現；似乎",pos:"v",hint:"ap__ 6字母",sentences:["A rainbow will ___ after the rain stops.","Stars begin to ___ in the sky after sunset.","The actor did not ___ on stage last night.","Suddenly, a dog seemed to ___ from nowhere."],opts:["appear","happen","become","grow"]},
+  {e:"cross",zh:"穿越；通過",pos:"v",hint:"cr__ 5字母",sentences:["Be careful when you ___ the busy road.","He had to ___ the river to reach the village.","Look both ways before you ___ the street.","The hikers needed to ___ the mountain pass."],opts:["cross","reach","carry","land"]},
+  {e:"interest",zh:"興趣；利息",pos:"n",hint:"int__ 8字母",sentences:["My ___ in cooking started when I was a child.","She showed great ___ in learning English.","He has no ___ in sports at all.","Her ___ in music grew after joining the school band."],opts:["interest","mind","voice","level"]},
+  {e:"mind",zh:"介意；心智",pos:"v/n",hint:"mi__ 4字母",sentences:["Do you ___ if I open the window?","She didn't ___ waiting for an extra hour.","I don't ___ helping you with your homework.","Would you ___ turning down the music?"],opts:["mind","matter","decide","agree"]},
+  {e:"center",zh:"中心；中央",pos:"n",hint:"ce__ 6字母",sentences:["The library is in the ___ of the town.","The shopping mall is in the ___ of the city.","There is a fountain in the ___ of the park.","The hospital is located at the ___ of the map."],opts:["center","ground","station","floor"]},
+  {e:"death",zh:"死亡（名詞）",pos:"n",hint:"de__ 5字母",sentences:["The ___ of the old king made everyone sad.","News of his ___ spread quickly through the town.","The ___ of the plant surprised the gardener.","The film ends with the ___ of the main character."],opts:["death","land","chance","trouble"]},
+  {e:"land",zh:"土地；降落",pos:"n/v",hint:"la__ 4字母",sentences:["The farmer owns a large piece of ___ near the river.","The plane will ___ in thirty minutes.","They cleared the ___ to build a new school.","The bird chose to ___ on the roof."],opts:["land","ground","space","earth"]},
+  {e:"landing",zh:"降落（名詞）",pos:"n",hint:"la__ 7字母",sentences:["The plane made a safe ___ despite the heavy rain.","Everyone cheered after the smooth ___.","The pilot announced the ___ was ten minutes away.","It was a perfect ___ on a foggy morning."],opts:["landing","land","floor","ground"]},
+  {e:"while",zh:"當...同時；一段時間",pos:"conj",hint:"wh__ 5字母",sentences:["She studied ___ she waited for her friend.","He listened to music ___ cooking dinner.","I fell asleep ___ reading the book.","She smiled ___ she answered the question."],opts:["while","when","whether","except"]},
+  {e:"interested",zh:"感興趣的（人）",pos:"adj",hint:"int__ 10字母",sentences:["I am ___ in art and music.","She was ___ in learning a new language.","Are you ___ in joining the chess club?","He looked ___ when she explained the plan."],opts:["interested","interesting","interest","friendly"]},
+  {e:"far",zh:"遠的；遙遠地",pos:"adj/adv",hint:"fa__ 3字母",sentences:["The museum is ___ from here — we need a taxi.","How ___ is the nearest hospital?","She walked so ___ that her feet hurt.","The school is not ___ from our house."],opts:["far","near","below","above"]},
+  {e:"several",zh:"幾個；數個",pos:"adj",hint:"se__ 7字母",sentences:["There are ___ students absent today — about five.","She tried the dress on ___ times before buying it.","He called ___ times but nobody answered.","I have ___ friends who speak English fluently."],opts:["several","common","either","lot"]},
+  {e:"interesting",zh:"有趣的（事物）",pos:"adj",hint:"int__ 11字母",sentences:["The movie was so ___ that everyone stayed until the end.","That is a very ___ question.","I read an ___ article about space travel.","Her job sounds really ___ to me."],opts:["interesting","interested","special","simple"]},
+  {e:"special",zh:"特別的；專門的",pos:"adj",hint:"sp__ 7字母",sentences:["Today is ___ — it is our wedding anniversary.","She made a ___ dinner for his birthday.","This place has a ___ meaning to our family.","They have a ___ offer for new students."],opts:["special","common","simple","clear"]},
+  {e:"full",zh:"滿的；充滿的",pos:"adj",hint:"fu__ 4字母",sentences:["The bus is ___ of passengers — no more seats.","The bag was ___ of books and notebooks.","After dinner I felt very ___.","The stadium was ___ on match day."],opts:["full","common","lot","strong"]},
+  {e:"certain",zh:"確定的；某個",pos:"adj",hint:"ce__ 7字母",sentences:["I am ___ that she will pass the exam.","Are you ___ you locked the door?","He was ___ he had seen her before.","I'm not ___ what time the meeting starts."],opts:["certain","common","friendly","simple"]},
+  {e:"uncertain",zh:"不確定的",pos:"adj",hint:"un__ 9字母",sentences:["It is ___ that the package will arrive today.","The future of the project is still ___.","She felt ___ about her decision.","The weather tomorrow is completely ___."],opts:["uncertain","certain","common","clear"]},
+  {e:"less",zh:"較少的；更少",pos:"adj/adv",hint:"le__ 4字母",sentences:["I eat ___ sugar now than I did last year.","Try to spend ___ time on your phone.","She feels ___ nervous after practising.","He does ___ work than everyone else."],opts:["less","except","either","above"]},
+  {e:"whether",zh:"是否；不管",pos:"conj",hint:"wh__ 7字母",sentences:["I don't know ___ to take the bus or the train.","She asked me ___ I wanted coffee.","Tell me ___ you are coming or not.","I wonder ___ it will rain tomorrow."],opts:["whether","while","except","either"]},
+  {e:"truly",zh:"真正地；確實地",pos:"adv",hint:"tr__ 5字母",sentences:["She ___ loves her job — she smiles every day.","This is ___ the best meal I have ever had.","I am ___ sorry for what I said.","He ___ believes he can win."],opts:["truly","fully","clearly","finally"]},
+  {e:"fully",zh:"完全地；充分地",pos:"adv",hint:"fu__ 5字母",sentences:["I don't ___ understand this grammar rule yet.","She was not ___ awake when the alarm rang.","The battery is not ___ charged.","Make sure you ___ read the instructions first."],opts:["fully","truly","clearly","finally"]},
+  {e:"quiet",zh:"安靜的",pos:"adj",hint:"qu__ 5字母",note:"注意：不是 queit！",sentences:["The library must be ___ at all times.","Please be ___ — the baby is sleeping.","She sat in a ___ corner and read her book.","The village was ___ early in the morning."],opts:["quiet","quick","quite","quote"]},
+  {e:"behind",zh:"在...後面；落後",pos:"prep/adv",hint:"be__ 6字母",note:"注意：不是 belind！",sentences:["She hid ___ the door when she heard the noise.","The cat is hiding ___ the sofa.","Don't fall ___ in your studies.","He left his bag ___ on the bus."],opts:["behind","below","beside","before"]},
+  {e:"along",zh:"沿著；一起",pos:"prep/adv",hint:"al__ 5字母",sentences:["We walked ___ the river and talked for hours.","She drove ___ the coast road at sunset.","The trees were planted ___ the road.","Come ___ — we don't want to be late."],opts:["along","above","below","across"]},
+  {e:"lie",zh:"說謊；躺下",pos:"v",hint:"li__ 3字母",sentences:["He didn't want to ___ to his mother.","She decided to ___ down and rest for a while.","Don't ___ — tell me the truth.","The cat likes to ___ in the sun."],opts:["lie","live","line","like"]},
+  {e:"allow",zh:"允許；准許",pos:"v",hint:"al__ 5字母",sentences:["Please ___ me to explain the situation.","They do not ___ phones in the classroom.","The teacher will ___ us to work in groups.","Are we ___ to bring food inside?"],opts:["allow","agree","lie","rise"]},
+  {e:"rise",zh:"升起；上升",pos:"v",hint:"ri__ 4字母",sentences:["The sun will ___ at six tomorrow morning.","Prices tend to ___ before major holidays.","The river began to ___ after the heavy rain.","She watched the balloon ___ into the sky."],opts:["rise","raise","lie","fall"]},
+  {e:"raise",zh:"舉起；提高",pos:"v",hint:"ra__ 5字母",sentences:["Please ___ your hand if you have a question.","She had to ___ her voice to be heard.","They plan to ___ money for the school library.","He ___ his cup to toast the happy couple."],opts:["raise","rise","allow","lift"]},
+  {e:"strong",zh:"強壯的；強的",pos:"adj",hint:"str__ 6字母",sentences:["He is a ___ swimmer — nobody can beat him.","She has a very ___ opinion about this topic.","The coffee was too ___ for me to drink.","You need to be ___ to carry those heavy boxes."],opts:["strong","weak","clear","common"]},
+  {e:"weak",zh:"虛弱的；微弱的",pos:"adj",hint:"we__ 4字母",sentences:["The baby's voice was too ___ for us to hear.","She felt ___ after being sick for a week.","The signal is too ___ to make a call.","His argument was too ___ to convince anyone."],opts:["weak","strong","simple","low"]},
+  {e:"clear",zh:"清楚的；明確的",pos:"adj",hint:"cl__ 5字母",sentences:["The instructions were very ___ and easy to follow.","It was a ___ day with no clouds in the sky.","She gave a ___ explanation of the problem.","His handwriting is ___ and easy to read."],opts:["clear","dark","weak","common"]},
+  {e:"clearly",zh:"清楚地；明確地",pos:"adv",hint:"cl__ 7字母",sentences:["Could you speak more ___? I cannot understand you.","She ___ explained every step of the process.","I could ___ see the mountains from the window.","He spoke so ___ that even the children understood."],opts:["clearly","finally","fully","truly"]},
+  {e:"cover",zh:"覆蓋；涵蓋",pos:"v",hint:"co__ 5字母",sentences:["The snow began to ___ the ground overnight.","Please ___ the pot before the water boils over.","This textbook does not ___ that grammar point.","She used a blanket to ___ the sleeping child."],opts:["cover","carry","cross","clear"]},
+  {e:"common",zh:"普通的；常見的",pos:"adj",hint:"co__ 6字母",sentences:["Saying 'sorry' is a very ___ thing to do.","Cold weather is ___ in this area during winter.","It is ___ to feel nervous before an exam.","The name 'Maria' is very ___ in this country."],opts:["common","special","simple","clear"]},
+  {e:"finally",zh:"終於；最後",pos:"adv",hint:"fi__ 7字母",sentences:["___, she agreed to join the team after many months.","After three hours, they ___ found the right road.","He ___ finished the book after a month.","She ___ got the answer after many tries."],opts:["Finally","Clearly","Either","Except"]},
+  {e:"above",zh:"在...上方",pos:"prep/adv",hint:"ab__ 5字母",sentences:["The birds flew ___ the clouds in the blue sky.","The sign ___ the door said 'No Entry'.","Her score was ___ the class average.","The temperature was well ___ thirty degrees."],opts:["above","below","along","across"]},
+  {e:"below",zh:"在...下方",pos:"prep/adv",hint:"be__ 5字母",sentences:["The fish swim ___ the old stone bridge.","Please write your name in the space ___.","The temperature dropped ___ zero last night.","There is a car park ___ the building."],opts:["below","above","along","around"]},
+  {e:"piece",zh:"一片；一塊",pos:"n",hint:"pi__ 5字母",sentences:["She gave me a ___ of cake from the kitchen.","Can I have a ___ of paper, please?","He played a beautiful ___ of music.","I only need a small ___ of tape."],opts:["piece","lot","note","mark"]},
+  {e:"fill",zh:"填滿；填寫",pos:"v",hint:"fi__ 4字母",sentences:["Please ___ in your name on this form.","___ the glass with water before you drink.","She needs to ___ out the application form.","Can you ___ the tank before you return the car?"],opts:["fill","cover","mark","note"]},
+  {e:"heart",zh:"心；心臟",pos:"n",hint:"he__ 5字母",sentences:["My ___ beats fast when I am nervous.","She has a very kind ___.","He learned the poem by ___.","The doctor listened to his ___ carefully."],opts:["heart","earth","floor","space"]},
+  {e:"nature",zh:"自然；大自然",pos:"n",hint:"na__ 6字母",sentences:["She likes to take a walk and enjoy ___.","The book is about the ___ of human memory.","Protecting ___ is everyone's responsibility.","Photos of ___ always make her feel calm."],opts:["nature","earth","space","floor"]},
+  {e:"report",zh:"報告；報導",pos:"n/v",hint:"re__ 6字母",sentences:["The weather ___ said it would snow tomorrow.","She had to write a ___ about the school trip.","The news ___ showed images of the storm.","He will ___ the results to the manager tomorrow."],opts:["report","note","tip","mark"]},
+  {e:"drive",zh:"開車；驅使",pos:"v",hint:"dr__ 5字母",sentences:["Can you ___ me to the station?","She learned to ___ when she was eighteen.","He had to ___ for two hours to reach the city.","What ___ you to make this decision?"],opts:["drive","throw","carry","cover"]},
+  {e:"driver",zh:"司機；駕駛員",pos:"n",hint:"dr__ 6字母",sentences:["The taxi ___ knew every street in the city.","She became a bus ___ after years of training.","The ___ stopped to let the pedestrians cross.","A good ___ always checks the mirrors before turning."],opts:["driver","rider","writer","fighter"]},
+  {e:"either",zh:"任一；兩者之一",pos:"det/adv",hint:"ei__ 6字母",sentences:["You can take ___ the bus or the train.","I don't like ___ of these options.","___ answer is acceptable — just choose one.","She doesn't speak French or German, ___"],opts:["either","except","whether","both"]},
+  {e:"except",zh:"除了...以外",pos:"prep",hint:"ex__ 6字母",sentences:["Everyone passed the test ___ Tom.","The shop is open every day ___ Sunday.","She answered all the questions ___ the last one.","I like all vegetables ___ bitter melon."],opts:["except","either","along","above"]},
+  {e:"fire",zh:"火；火災",pos:"n",hint:"fi__ 4字母",sentences:["The ___ started in the kitchen and spread fast.","They sat around the camp ___ and told stories.","The ___ truck arrived within minutes.","Be careful — that ___ is very hot."],opts:["fire","earth","heart","space"]},
+  {e:"stay",zh:"待著；停留",pos:"v",hint:"st__ 4字母",sentences:["Can I ___ here for the night?","Please ___ in your seats until the bus stops.","She decided to ___ home instead of going out.","How long do you plan to ___ in Taipei?"],opts:["stay","rest","wear","lie"]},
+  {e:"space",zh:"空間；太空",pos:"n",hint:"sp__ 5字母",sentences:["There is not enough ___ in this room for everyone.","She dreams of travelling to ___ one day.","Please leave some ___ between the chairs.","Astronauts live in ___ stations for months."],opts:["space","floor","ground","earth"]},
+  {e:"watch",zh:"看（電視／比賽）；手錶",pos:"v/n",hint:"wa__ 5字母",sentences:["She likes to ___ old movies on weekends.","Did you ___ the football match last night?","We all ___ as the sun went down.","He always ___ the news before bed."],opts:["watch","see","read","note"]},
+  {e:"see",zh:"看見；明白",pos:"v",hint:"se__ 3字母",sentences:["I can ___ the mountain clearly from my window.","Did you ___ that car go by?","I ___ what you mean now — thank you.","She couldn't ___ well without her glasses."],opts:["see","watch","read","cover"]},
+  {e:"read",zh:"閱讀；讀",pos:"v",hint:"re__ 4字母",sentences:["She ___ the letter three times before sending it.","He loves to ___ adventure stories.","Can you ___ this word for me?","I ___ about it in the newspaper this morning."],opts:["read","see","watch","note"]},
+  {e:"prepare",zh:"準備；預備",pos:"v",hint:"pr__ 7字母",sentences:["You should ___ for the test the night before.","She stayed up late to ___ for the presentation.","He ___ a special meal for the guests.","We need to ___ everything before the trip."],opts:["prepare","agree","cover","fill"]},
+  {e:"friend",zh:"朋友",pos:"n",hint:"fr__ 6字母",sentences:["She is my best ___ — we met in primary school.","He made a new ___ at the English class.","A good ___ listens without judging.","My ___ helped me when I was in trouble."],opts:["friend","driver","reader","fighter"]},
+  {e:"friendly",zh:"友善的",pos:"adj",hint:"fr__ 8字母",sentences:["She is very ___ and always smiles at everyone.","The staff at the hotel were ___ and helpful.","He greeted us with a ___ wave.","The neighbourhood is known for its ___ atmosphere."],opts:["friendly","simple","common","weak"]},
+  {e:"tip",zh:"小技巧；提示；小費",pos:"n",hint:"ti__ 3字母",sentences:["She gave me a useful ___ for cooking rice.","Do you have any ___ for learning new words?","He left a generous ___ for the waiter.","Follow this simple ___ to improve your writing."],opts:["tip","note","mark","report"]},
+  {e:"hope",zh:"希望（可能發生）",pos:"v/n",hint:"ho__ 4字母",sentences:["I ___ you have a wonderful birthday.","She ___ to visit Japan next year.","We all ___ the rain will stop soon.","He never lost ___ even during hard times."],opts:["hope","wish","agree","prepare"]},
+  {e:"wish",zh:"希望（不易實現）",pos:"v/n",hint:"wi__ 4字母",sentences:["I ___ I could fly like a bird.","She ___ she had more time to study.","He ___ he could go back and change things.","I ___ you all the best in your new job."],opts:["wish","hope","agree","allow"]},
+  {e:"difficult",zh:"困難的",pos:"adj",hint:"di__ 9字母",sentences:["This question is too ___ for me to answer.","Learning to play the violin can be ___.","The exam was more ___ than we expected.","She found it ___ to concentrate in the noisy room."],opts:["difficult","simple","common","weak"]},
+  {e:"simple",zh:"簡單的",pos:"adj",hint:"si__ 6字母",sentences:["The instructions are very ___ — just three steps.","She gave a ___ but clear explanation.","The design of the building is clean and ___.","It is a ___ question — anyone can answer it."],opts:["simple","difficult","common","clear"]},
+  {e:"note",zh:"筆記；注意",pos:"n/v",hint:"no__ 4字母",sentences:["I made a ___ of the homework in my notebook.","Please ___ that the office will be closed Monday.","She left a ___ on the kitchen table.","He wrote a quick ___ to say thank you."],opts:["note","mark","report","tip"]},
+  {e:"earth",zh:"地球；土壤",pos:"n",hint:"ea__ 5字母",sentences:["The ___ is round and orbits the sun.","Plant the seeds deep in the ___.","We should take better care of our ___.","The ___ moved under their feet during the earthquake."],opts:["earth","floor","ground","space"]},
+  {e:"floor",zh:"（室內）地板",pos:"n",hint:"fl__ 5字母",sentences:["The books are on the ___ of the library.","She dropped her keys on the ___.","The baby crawled across the ___.","Mop the ___ after cleaning the dishes."],opts:["floor","ground","earth","space"]},
+  {e:"mark",zh:"標記；分數",pos:"n/v",hint:"ma__ 4字母",sentences:["The teacher asked us to ___ the important words.","She got full ___ on the spelling test.","Please ___ the correct answer with a circle.","He left a ___ on the wall by accident."],opts:["mark","note","cover","fill"]},
+  {e:"river",zh:"河流",pos:"n",hint:"ri__ 5字母",sentences:["The ___ near our house is great for swimming.","They crossed the ___ by boat.","The ___ flooded after three days of rain.","We had a picnic by the ___ last weekend."],opts:["river","earth","floor","station"]},
+  {e:"lot",zh:"很多；一大堆",pos:"n/adv",hint:"lo__ 3字母",sentences:["There is a ___ of books on the table.","She has a ___ of energy.","A ___ of students joined the club.","He laughs a ___ when he is happy."],opts:["lot","piece","note","space"]},
+  {e:"station",zh:"車站；站",pos:"n",hint:"st__ 7字母",sentences:["I will meet you at the train ___.","The bus ___ is ten minutes from here.","She works at the police ___.","Which ___ do we get off at?"],opts:["station","center","floor","space"]},
+  {e:"agree",zh:"同意；贊成",pos:"v",hint:"ag__ 5字母",sentences:["Do you ___ with my decision?","She ___ that the plan was a good idea.","They finally ___ to work together.","I don't ___ with everything he says."],opts:["agree","allow","hope","wish"]},
+  {e:"agreement",zh:"協議；同意",pos:"n",hint:"ag__ 9字母",sentences:["They signed an ___ to work together for two years.","There was an ___ between the two companies.","We reached an ___ after a long discussion.","The ___ was signed by both sides."],opts:["agreement","chance","trouble","tip"]},
+  {e:"chance",zh:"機會；可能性",pos:"n",hint:"ch__ 6字母",sentences:["This is a great ___ to learn something new.","Give me one more ___ to try.","She took every ___ to practise her English.","There is a ___ of rain this afternoon."],opts:["chance","trouble","rest","agreement"]},
+  {e:"trouble",zh:"麻煩；困難",pos:"n",hint:"tr__ 7字母",sentences:["He got into ___ at school because he was late.","She had ___ sleeping the night before the exam.","Sorry to cause you any ___.","They ran into ___ when the car broke down."],opts:["trouble","chance","fight","rest"]},
+  {e:"throw",zh:"丟；投擲",pos:"v",hint:"thr__ 5字母",sentences:["Don't ___ the ball inside the house.","She ___ the paper into the bin.","He tried to ___ the ball over the wall.","Can you ___ me that pen, please?"],opts:["throw","fight","wear","stay"]},
+  {e:"fight",zh:"打架；爭吵；戰鬥",pos:"v/n",hint:"fi__ 5字母",sentences:["They had a ___ about who would pay the bill.","Don't ___ in the classroom.","She had to ___ to stay awake during the film.","The two teams will ___ for the championship."],opts:["fight","throw","rest","wear"]},
+  {e:"rest",zh:"休息；剩餘",pos:"v/n",hint:"re__ 4字母",sentences:["I need to ___ after a long day of work.","She took a short ___ after lunch.","The ___ of the students waited outside.","You should ___ your eyes after studying for hours."],opts:["rest","stay","wear","fight"]},
+  {e:"wear",zh:"穿戴（衣物）",pos:"v",hint:"we__ 4字母",sentences:["You should ___ a jacket — it is cold outside.","She always ___ bright colours.","What are you going to ___ to the party?","He forgot to ___ his name badge at the meeting."],opts:["wear","rest","stay","fight"]},
+  // 07.06 NEW WORDS
+  {e:"list",zh:"清單；列表",pos:"n",hint:"li__ 4字母",sentences:["She made a ___ of things to buy at the market.","Check the ___ to see if your name is there.","I wrote a to-do ___ for the week.","Please add milk to the shopping ___."],opts:["list","note","mark","tip"]},
+  {e:"cent",zh:"分；美分",pos:"n",hint:"ce__ 4字母",sentences:["One dollar equals one hundred ___s.","She only had a few ___s left in her wallet.","The apple costs fifty ___s each.","He didn't have a ___ to his name."],opts:["cent","unit","mark","piece"]},
+  {e:"dollar",zh:"美元；元",pos:"n",hint:"do__ 6字母",sentences:["This jacket costs fifty ___s.","Can I borrow five ___s?","The ticket is only one ___.","She saved every ___ she earned."],opts:["dollar","ruler","center","driver"]},
+  {e:"north",zh:"北；北方",pos:"n/adj/adv",hint:"no__ 5字母",sentences:["The wind is blowing from the ___.","They drove ___ for three hours.","The school is on the ___ side of the road.","Polar bears live in the far ___."],opts:["north","south","east","west"]},
+  {e:"south",zh:"南；南方",pos:"n/adj/adv",hint:"so__ 5字母",sentences:["We are driving ___ to visit the beach.","The birds fly ___ in winter.","She moved to the ___ of the country.","The weather is warmer in the ___."],opts:["south","north","east","west"]},
+  {e:"east",zh:"東；東方",pos:"n/adj/adv",hint:"ea__ 4字母",sentences:["The sun rises in the ___.","She moved to the ___ coast last year.","The village is on the ___ side of the river.","Wind from the ___ brought cold weather."],opts:["east","west","north","south"]},
+  {e:"west",zh:"西；西方",pos:"n/adj/adv",hint:"we__ 4字母",sentences:["The sun sets in the ___.","They drove ___ for two hours.","The ___ wing of the building has new classrooms.","Cowboy films often show life in the American ___."],opts:["west","east","north","south"]},
+  {e:"join",zh:"加入；參加；連接",pos:"v",hint:"jo__ 4字母",sentences:["Would you like to ___ our English club?","She decided to ___ the gym last month.","He wants to ___ the school choir.","Can I ___ your group for the project?"],opts:["join","agree","allow","prepare"]},
+  {e:"price",zh:"價格；價錢",pos:"n",hint:"pr__ 5字母",sentences:["The ___ of this phone is too high for me.","What is the ___ of a return ticket?","The ___ of vegetables went up last month.","She checked the ___ tag before buying the shirt."],opts:["price","list","size","chance"]},
+  {e:"rule",zh:"規則；規定",pos:"n",hint:"ru__ 4字母",sentences:["You must follow the ___ of the game.","Breaking a ___ in this school has consequences.","It is the ___ to raise your hand before speaking.","The teacher explained the grammar ___ clearly."],opts:["rule","list","tip","note"]},
+  {e:"ruler",zh:"尺；統治者",pos:"n",hint:"ru__ 5字母",sentences:["She used a ___ to draw a straight line.","He is a fair ___ who listens to his people.","I need a ___ to measure this rectangle.","The ancient ___ built many temples."],opts:["ruler","driver","center","writer"]},
+  {e:"ready",zh:"準備好的",pos:"adj",hint:"re__ 5字母",sentences:["Are you ___ for the test tomorrow?","Dinner is ___ — please come to the table.","Get ___ — we are leaving in five minutes.","She felt ___ to face any challenge."],opts:["ready","fine","clear","simple"]},
+  {e:"fine",zh:"好的；晴朗的；罰款",pos:"adj/n",hint:"fi__ 4字母",sentences:["The weather is ___ today — perfect for a walk.","Everything is ___ — don't worry.","He received a ___ for parking in the wrong place.","She looks ___ after her long holiday."],opts:["fine","dark","ready","foreign"]},
+  {e:"kill",zh:"殺死；消滅",pos:"v",hint:"ki__ 4字母",sentences:["He tried to ___ the spider but he missed.","The cold weather will ___ the plants if we don't cover them.","Don't ___ time — start your homework now.","The medicine will ___ the bacteria quickly."],opts:["kill","throw","wear","fight"]},
+  {e:"top",zh:"頂端；最上面",pos:"n/adj",hint:"to__ 3字母",sentences:["The book is on the ___ shelf.","She climbed to the ___ of the hill.","He always finishes at the ___ of the class.","The view from the ___ was breathtaking."],opts:["top","bottom","size","list"]},
+  {e:"bottom",zh:"底部；最下面",pos:"n",hint:"bo__ 6字母",sentences:["The answer is at the ___ of the page.","She found the key at the ___ of her bag.","There is a crack at the ___ of the cup.","The fish stayed at the ___ of the tank."],opts:["bottom","top","size","dark"]},
+  {e:"size",zh:"大小；尺寸",pos:"n",hint:"si__ 4字母",sentences:["What ___ shoes do you wear?","The ___ of the room surprised everyone.","This bag comes in three different ___s.","Please choose the right ___ before ordering."],opts:["size","price","list","rule"]},
+  {e:"spring",zh:"春天；彈跳；泉水",pos:"n/v",hint:"spr__ 6字母",sentences:["Flowers start to bloom in ___.","The cat will ___ at any moving toy.","We plan to travel in the ___.","A cold ___ of water flowed from the rock."],opts:["spring","fall","dark","bottom"]},
+  {e:"pot",zh:"鍋子；花盆",pos:"n",hint:"po__ 3字母",sentences:["She put the soup in a big ___ on the stove.","Water the plant in the ___ every two days.","He cooked the pasta in a large ___.","The flower ___ by the window gets lots of sun."],opts:["pot","plant","space","piece"]},
+  {e:"plant",zh:"植物；種植",pos:"n/v",hint:"pl__ 5字母",sentences:["She planted a ___ in the small pot by the window.","We want to ___ a tree in the garden.","The ___ needs water every day.","They ___ rice in the fields every spring."],opts:["plant","pot","space","earth"]},
+  {e:"dark",zh:"黑暗的；深色的",pos:"adj",hint:"da__ 4字母",sentences:["The room was ___ because all the lights were off.","It gets ___ early in winter.","She prefers ___ chocolate to milk chocolate.","The children were afraid of the ___."],opts:["dark","fine","clear","ready"]},
+  {e:"answer",zh:"回答；答案",pos:"n/v",hint:"an__ 6字母",sentences:["Can you ___ my question, please?","She raised her hand to ___ the teacher.","The ___ was written at the bottom of the page.","He could not ___ without thinking carefully."],opts:["answer","list","mark","note"]},
+  {e:"foreign",zh:"外國的；陌生的",pos:"adj",hint:"fo__ 7字母",sentences:["She is learning a ___ language at school.","The ___ students joined our English class today.","He has never tried ___ food before.","She felt like a ___ person in her own town."],opts:["foreign","common","simple","clear"]},
+  // ── 2026-07-15 / 07-16 新增 35 字 ──────────────────
+  {e:"foreigner",zh:"外國人",pos:"n",hint:"fo__ 9字母",note:"foreign 是形容詞（外國的）；foreigner 才是「人」。",sentences:["A ___ asked me for directions in English.","Many a ___ visits this temple every year.","She was the only ___ in the whole village.","As a ___, he had to show his passport."],opts:["foreigner","foreign","farmer","driver"]},
+  {e:"save",zh:"存（錢）；拯救；節省",pos:"v",hint:"sa__ 4字母",sentences:["I want to ___ money for a new bike.","The doctor worked hard to ___ the boy's life.","Turn off the lights to ___ electricity.","Remember to ___ your work before you close the file."],opts:["save","spend","kill","carry"]},
+  {e:"heat",zh:"熱；加熱",pos:"n/v",hint:"he__ 4字母",note:"heat 是名詞／動詞；形容詞「熱的」要用 hot。",sentences:["The ___ in summer makes me want to swim.","Please ___ the soup for three minutes.","I cannot stand the ___ in the kitchen.","The ___ from the fire warmed the whole room."],opts:["heat","hot","fire","cold"]},
+  {e:"animal",zh:"動物",pos:"n",hint:"an__ 6字母",sentences:["A dog is a friendly ___.","Which ___ do you like best?","Every ___ needs food and water.","The ___ in the forest is hard to see."],opts:["animal","plant","monkey","people"]},
+  {e:"zoo",zh:"動物園",pos:"n",hint:"zo__ 3字母",sentences:["We saw ten monkeys at the ___.","The ___ opens at nine in the morning.","She takes her children to the ___ every summer.","Lions and tigers live in the ___."],opts:["zoo","farm","pool","park"]},
+  {e:"monkey",zh:"猴子",pos:"n",hint:"mo__ 6字母",sentences:["The ___ took a banana from my hand.","A little ___ jumped from tree to tree.","That ___ is very clever.","We watched the ___ play at the zoo."],opts:["monkey","animal","donkey","zoo"]},
+  {e:"train",zh:"火車；訓練",pos:"n/v",hint:"tr__ 5字母",note:"train 是動詞或火車；「訓練（名詞）」是 training。",sentences:["The ___ to Taipei leaves at eight.","He takes the ___ to work every day.","The coach will ___ the team for the big game.","She wants to ___ her dog to sit."],opts:["train","truck","training","trip"]},
+  {e:"training",zh:"訓練（名詞）",pos:"n",hint:"tr__ 8字母",note:"training 是名詞：two weeks of training。",sentences:["The new workers need two weeks of ___.","She became a bus driver after months of ___.","The ___ starts at nine on Monday.","Good ___ makes a good player."],opts:["training","train","practice","trip"]},
+  {e:"pull",zh:"拉；拖",pos:"v",hint:"pu__ 4字母",note:"pull = 拉（往自己）；push = 推（往外）。",sentences:["Please ___ the door to open it.","The horse can ___ a heavy cart.","Don't ___ my hair!","They had to ___ the car out of the mud."],opts:["pull","push","throw","carry"]},
+  {e:"push",zh:"推",pos:"v",hint:"pu__ 4字母",note:"push = 推；pull = 拉，兩者相反。",sentences:["___ the button to start the machine.","Don't ___ people on the stairs.","He had to ___ the door hard to close it.","Can you help me ___ this heavy box?"],opts:["push","pull","carry","throw"]},
+  {e:"married",zh:"已婚的",pos:"adj",hint:"ma__ 7字母",note:"狀態用 be married；動作用 marry。",sentences:["They have been ___ for ten years.","She got ___ last spring.","Is your sister ___?","My ___ friends often talk about their children."],opts:["married","marry","single","ready"]},
+  {e:"marry",zh:"和...結婚",pos:"v",hint:"ma__ 5字母",note:"marry 後面直接接人：marry him（不加 with）。",sentences:["He wants to ___ her next year.","Will you ___ me?","They decided to ___ in a small church.","She will ___ her best friend from college."],opts:["marry","married","join","meet"]},
+  {e:"farm",zh:"農場",pos:"n",hint:"fa__ 4字母",sentences:["My uncle lives on a small ___.","There are many cows on this ___.","They grow rice on the ___.","We visited a ___ during the school trip."],opts:["farm","farmer","zoo","land"]},
+  {e:"farmer",zh:"農夫",pos:"n",hint:"fa__ 6字母",note:"farm = 農場（地方）；farmer = 農夫（人）。",sentences:["The ___ gets up before the sun rises.","A ___ works hard in the fields all day.","The ___ sold his vegetables at the market.","My grandfather was a rice ___."],opts:["farmer","farm","driver","foreigner"]},
+  {e:"wide",zh:"寬的；寬闊的",pos:"adj",hint:"wi__ 4字母",sentences:["The river here is very ___.","They walked down a ___ street.","The door is ___ enough for the sofa.","She opened her eyes ___ in surprise."],opts:["wide","narrow","full","far"]},
+  {e:"sale",zh:"拍賣；特價；銷售",pos:"n",hint:"sa__ 4字母",note:"on sale = 特價中；for sale = 出售中。",sentences:["These shoes are on ___ this week.","The old house is for ___.","The shop had a big ___ after New Year.","The ___ of tickets starts tomorrow."],opts:["sale","save","price","size"]},
+  {e:"easy",zh:"容易的；簡單的",pos:"adj",hint:"ea__ 4字母",sentences:["This question is ___ — everyone got it right.","It is not ___ to learn a new language.","She found the test quite ___.","Riding a bike is ___ once you learn."],opts:["easy","difficult","heavy","busy"]},
+  {e:"hair",zh:"頭髮",pos:"n",hint:"ha__ 4字母",sentences:["She has long black ___.","He is going to cut his ___ tomorrow.","My ___ gets wet in the rain.","The baby has soft brown ___."],opts:["hair","head","heart","hand"]},
+  {e:"finish",zh:"完成；結束",pos:"v",hint:"fi__ 6字母",sentences:["I must ___ my homework before dinner.","The film will ___ at ten o'clock.","Did you ___ the book I lent you?","She was the first to ___ the race."],opts:["finish","start","fill","fight"]},
+  {e:"deal",zh:"交易；處理（deal with）",pos:"n/v",hint:"de__ 4字母",note:"deal with = 處理、應付。",sentences:["They made a good ___ with the company.","It's a ___ — see you at six!","She knows how to ___ with angry customers.","I have a great ___ of work to do today."],opts:["deal","death","date","dark"]},
+  {e:"poor",zh:"貧窮的；可憐的；差的",pos:"adj",hint:"po__ 4字母",sentences:["The family was too ___ to buy a car.","___ boy — he lost his dog.","His English is ___, but he keeps trying.","We should help ___ people in our town."],opts:["poor","rich","pool","weak"]},
+  {e:"practice",zh:"練習",pos:"n/v",hint:"pr__ 8字母",note:"practice 後面接動詞要加 -ing：practice speaking。",sentences:["___ makes perfect.","She needs more ___ before the concert.","I ___ English for thirty minutes every day.","He goes to football ___ after school."],opts:["practice","prepare","training","price"]},
+  {e:"trip",zh:"旅行；旅程",pos:"n",hint:"tr__ 4字母",sentences:["We are planning a ___ to Japan.","How was your ___ to the beach?","The school ___ was cancelled because of rain.","It is a short ___ — only two hours by train."],opts:["trip","train","top","truck"]},
+  {e:"date",zh:"日期；約會",pos:"n",hint:"da__ 4字母",sentences:["What is the ___ today?","Please write your name and the ___ on the paper.","They went on their first ___ last Friday.","The ___ of the meeting has changed."],opts:["date","deal","dark","day"]},
+  {e:"police",zh:"警察（總稱）",pos:"n",hint:"po__ 6字母",note:"police 當複數用：The police are here.（不加 s）",sentences:["The ___ arrived five minutes after the call.","Call the ___ if you see anything strange.","The ___ station is next to the bank.","The ___ are looking for the missing dog."],opts:["police","pool","poor","driver"]},
+  {e:"home",zh:"家；在家",pos:"n/adv",hint:"ho__ 4字母",note:"go home 不加 to；at home = 在家。",sentences:["I go ___ at six every evening.","She stayed ___ because she was sick.","There is no place like ___.","He works from ___ on Fridays."],opts:["home","hope","house","hospital"]},
+  {e:"talk",zh:"說話；談話",pos:"v/n",hint:"ta__ 4字母",note:"talk to／talk with 某人；talk about 某事。",sentences:["Can we ___ about this later?","She likes to ___ with her friends after class.","He gave a short ___ about his trip.","Don't ___ during the exam."],opts:["talk","take","walk","tall"]},
+  {e:"same",zh:"相同的",pos:"adj",hint:"sa__ 4字母",note:"same 前面通常要加 the：the same as。",sentences:["We go to the ___ school.","Her bag is the ___ as mine.","They wear the ___ uniform every day.","Is this the ___ book you read last year?"],opts:["same","some","different","similar"]},
+  {e:"cookie",zh:"餅乾",pos:"n",hint:"co__ 6字母",sentences:["She baked a big ___ for me.","Would you like a ___ with your tea?","The ___ smells wonderful.","He ate the last ___ in the box."],opts:["cookie","cook","cake","corner"]},
+  {e:"truck",zh:"卡車",pos:"n",hint:"tr__ 5字母",sentences:["A big ___ blocked the narrow road.","The ___ carried the furniture to our new house.","His father drives a ___ for a living.","The fire ___ arrived very quickly."],opts:["truck","train","trip","track"]},
+  {e:"hospital",zh:"醫院",pos:"n",hint:"ho__ 8字母",sentences:["She works as a nurse at the city ___.","He was taken to the ___ after the accident.","The ___ is behind the police station.","My brother was born in this ___."],opts:["hospital","hotel","home","station"]},
+  {e:"plan",zh:"計畫",pos:"n/v",hint:"pl__ 4字母",note:"plan to + 原形動詞：plan to go。",sentences:["What is your ___ for the weekend?","We ___ to visit my grandparents next month.","The ___ worked perfectly.","She made a ___ to save more money."],opts:["plan","plant","idea","place"]},
+  {e:"idea",zh:"主意；想法",pos:"n",hint:"id__ 4字母",note:"idea 是可數名詞：a good idea（要加 a）。",sentences:["That is a great ___!","I have no ___ where he went.","She had an ___ to start a book club.","Whose ___ was it to come here?"],opts:["idea","plan","mind","interest"]},
+  {e:"radio",zh:"收音機；廣播",pos:"n",hint:"ra__ 5字母",sentences:["He listens to the ___ while driving.","Turn on the ___ — the news is starting.","The song is playing on the ___.","My grandmother still has an old ___."],opts:["radio","report","rain","river"]},
+  {e:"pool",zh:"游泳池；水池",pos:"n",hint:"po__ 4字母",sentences:["The hotel has a big swimming ___.","Children love to play in the ___.","She swims in the ___ every morning.","The ___ is closed for cleaning today."],opts:["pool","poor","pot","park"]},
+];
+
+var TF_DATA = [
+  {s:'"Reach" means to arrive at or extend to something.',c:true,e:'reach = 到達、搆到，例：Can you reach the top shelf?',word:'reach'},
+  {s:'"Carry" and "throw" mean the same thing.',c:false,e:'carry = 攜帶搬運；throw = 用力丟出去，兩者不同。',word:'carry'},
+  {s:'"Appear" means to come into view or become visible.',c:true,e:'appear = 出現，例：A rainbow appeared after the rain.',word:'appear'},
+  {s:'"Mind" can mean to object to something.',c:true,e:'mind = 介意，例：Do you mind if I sit here?',word:'mind'},
+  {s:'"Interested" describes a person who finds something boring.',c:false,e:'interested = 感興趣的；覺得無聊要用 bored。',word:'interested'},
+  {s:'"Interesting" describes the thing that catches attention.',c:true,e:'interesting = 有趣的（描述事物），例：This book is interesting.',word:'interesting'},
+  {s:'"Rise" and "raise" mean the same thing.',c:false,e:'rise = 自己升起（不及物）；raise = 舉起某物（及物）',word:'rise'},
+  {s:'"Above" and "below" are opposites.',c:true,e:'above = 在上方；below = 在下方，是一組反義詞。',word:'above'},
+  {s:'"Either" means both of two things.',c:false,e:'either = 兩者之一（任一個）；both = 兩個都',word:'either'},
+  {s:'"Hope" and "wish" are always interchangeable.',c:false,e:'hope = 希望可能發生的事；wish = 希望不太可能實現的事',word:'hope'},
+  {s:'"Watch" and "see" always mean the same thing.',c:false,e:'watch = 主動看（看電影）；see = 自然看見',word:'watch'},
+  {s:'"Earth", "ground", and "floor" all mean the same surface.',c:false,e:'earth = 地球或土壤；ground = 室外地面；floor = 室內地板',word:'earth'},
+  {s:'"Rest" means to stop activity and relax.',c:true,e:'rest = 休息，例：I need to rest after work.',word:'rest'},
+  {s:'"Agreement" is the noun form of "agree".',c:true,e:'agree（動詞）→ agreement（名詞）',word:'agreement'},
+  {s:'"Simple" is the opposite of "difficult".',c:true,e:'simple = 簡單的；difficult = 困難的',word:'simple'},
+  {s:'"Common" means very unusual or rare.',c:false,e:'common = 普通的、常見的；rare 才是稀有的',word:'common'},
+  {s:'One "dollar" equals one hundred "cents".',c:true,e:'1 dollar = 100 cents，美元的基本換算',word:'dollar'},
+  {s:'"North" and "south" are opposites.',c:true,e:'north = 北；south = 南，是一組反義詞',word:'north'},
+  {s:'"East" and "west" are the same direction.',c:false,e:'east = 東；west = 西，是一組反義詞',word:'east'},
+  {s:'"Rule" and "ruler" mean exactly the same thing.',c:false,e:'rule = 規則；ruler = 尺（文具）或統治者，不同意思',word:'rule'},
+  {s:'"Ready" means you are prepared and able to start.',c:true,e:'ready = 準備好的，例：Are you ready?',word:'ready'},
+  {s:'"Dark" means full of light.',c:false,e:'dark = 黑暗的；light 才是充滿光的',word:'dark'},
+  {s:'"Top" and "bottom" are opposites.',c:true,e:'top = 頂端；bottom = 底部，是一組反義詞',word:'top'},
+  {s:'"Foreign" means from your own country.',c:false,e:'foreign = 外國的；from your own country 是 domestic',word:'foreign'},
+  {s:'"Spring" can only mean the season.',c:false,e:'spring = 春天（名詞）；也可以是彈跳、湧出（動詞）',word:'spring'},
+  {s:'"Fine" can mean both "good/okay" and "a money penalty".',c:true,e:'fine = 很好、晴朗（形容詞）；也可以是罰款（名詞）',word:'fine'},
+  {s:'"A pot" and "a plant" refer to the same thing.',c:false,e:'pot = 鍋子或花盆；plant = 植物，兩者不同',word:'pot'},
+  {s:'"Join" means to become a member of or connect to something.',c:true,e:'join = 加入，例：join a club / join hands',word:'join'},
+  {s:'"Certain" and "uncertain" are opposites.',c:true,e:'certain = 確定的；uncertain = 不確定的，un- 是否定前綴',word:'certain'},
+  {s:'"Lie" always means to say something untrue.',c:false,e:'lie 有兩個意思：說謊 AND 躺下（lie down）',word:'lie'},
+  // ── 2026-07-15 / 07-16 新增 ──────────────────
+  {s:'"Pull" and "push" mean the same thing.',c:false,e:'pull = 拉（往自己）；push = 推（往外），兩者相反。',word:'pull'},
+  {s:'A "farmer" is a person who works on a farm.',c:true,e:'farm = 農場（地方）；farmer = 農夫（人）。',word:'farmer'},
+  {s:'A "foreigner" is a person from another country.',c:true,e:'foreign = 外國的（形容詞）；foreigner = 外國人。',word:'foreigner'},
+  {s:'"Train" can mean a vehicle and also to teach a skill.',c:true,e:'train = 火車（名詞）；也可以是訓練（動詞）。',word:'train'},
+  {s:'"Training" is a verb, as in "I training every day".',c:false,e:'training 是名詞。動詞要用 train：I train every day.',word:'training'},
+  {s:'"Marry with him" is correct English.',c:false,e:'marry 後面直接接人：marry him（不加 with）。',word:'marry'},
+  {s:'"She is married" describes her situation now.',c:true,e:'be married = 已婚（狀態）；marry = 結婚（動作）。',word:'married'},
+  {s:'"The soup is heat" is correct English.',c:false,e:'heat 是名詞／動詞；形容詞要用 hot：The soup is hot.',word:'heat'},
+  {s:'"Save" can mean to keep money for later.',c:true,e:'save = 存錢、拯救、節省，例：save money。',word:'save'},
+  {s:'"Practice makes perfect" means practising often makes you better.',c:true,e:'熟能生巧。practice = 練習。',word:'practice'},
+  {s:'"Poor" and "rich" are opposites.',c:true,e:'poor = 貧窮的；rich = 有錢的，是一組反義詞。',word:'poor'},
+  {s:'"Wide" means the same as "long".',c:false,e:'wide = 寬的（橫向）；long = 長的，兩者不同。',word:'wide'},
+  {s:'"The police is coming" is correct English.',c:false,e:'police 當複數用：The police are coming.',word:'police'},
+  {s:'"I go to home" is correct English.',c:false,e:'go home 不加 to：I go home.',word:'home'},
+  {s:'"Same" usually needs "the" in front of it.',c:true,e:'the same as：Her bag is the same as mine.',word:'same'},
+  {s:'A "zoo" and a "farm" are the same place.',c:false,e:'zoo = 動物園（看動物）；farm = 農場（種田養牲畜）。',word:'zoo'},
+  {s:'"Finish" means to start something.',c:false,e:'finish = 完成、結束；start 才是開始。',word:'finish'},
+  {s:'"Idea" is countable, so we say "a good idea".',c:true,e:'idea 是可數名詞，前面要加 a／an。',word:'idea'},
+  {s:'"On sale" means something is being sold at a lower price.',c:true,e:'on sale = 特價中；for sale = 出售中。',word:'sale'},
+  {s:'"Easy" is the opposite of "difficult".',c:true,e:'easy = 容易的；difficult = 困難的。',word:'easy'},
+  {s:'"Deal with" means to handle something.',c:true,e:'deal with = 處理、應付，例：deal with a problem。',word:'deal'},
+  {s:'"Talk" and "walk" mean the same thing.',c:false,e:'talk = 說話；walk = 走路，只差一個字母，別搞混。',word:'talk'},
+];
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+var DB = {
+  words: [], custom: [], stats: {},
+  sessions: 0, totalCorrect: 0, totalWrong: 0,
+  lastDate: '', streakDays: 0, recentErrors: [],
+  settings: { repeat: 3 }
+};
+var SCOPE = 'all';
+var MODE = 'fill';
+
+function loadDB(){
+  try {
+    var s = localStorage.getItem('abby_vocab_v5');
+    if(s){ var d = JSON.parse(s); Object.assign(DB, d); }
+  } catch(e){}
+  DB.words = BUILTIN.slice();
+  (DB.custom||[]).forEach(function(c){
+    if(!DB.words.find(function(w){ return w.e === c.e; })) DB.words.push(c);
+  });
+  DB.stats = DB.stats || {};
+  DB.recentErrors = DB.recentErrors || [];
+  DB.settings = DB.settings || {};
+  if(typeof DB.settings.repeat !== 'number') DB.settings.repeat = 3;
+  markStreak();
+  updateTotalCount();
+  syncRepeatChips();
+}
+function saveDB(){
+  try { localStorage.setItem('abby_vocab_v5', JSON.stringify(DB)); }
+  catch(e){ showToast('⚠️ 儲存失敗，瀏覽器空間可能已滿'); }
+}
+function markStreak(){
+  var today = new Date().toLocaleDateString();
+  if(DB.lastDate === today) return;
+  var y = new Date(Date.now() - 86400000).toLocaleDateString();
+  DB.streakDays = (DB.lastDate === y) ? (DB.streakDays||0) + 1 : 1;
+  DB.lastDate = today;
+  saveDB();
+}
+function updateTotalCount(){
+  var el = document.getElementById('total-count');
+  if(el) el.textContent = '共 ' + DB.words.length + ' 個單字';
+}
+function getStats(word){
+  if(!DB.stats[word]) DB.stats[word] = {correct:0,wrong:0,streak:0,lastSeen:0};
+  return DB.stats[word];
+}
+function recordResult(word, correct){
+  var s = getStats(word);
+  if(correct){ s.correct++; s.streak = (s.streak||0)+1; DB.totalCorrect++; }
+  else {
+    s.wrong++; s.streak = 0; DB.totalWrong++;
+    DB.recentErrors.unshift({word:word, date:new Date().toLocaleDateString()});
+    if(DB.recentErrors.length > 30) DB.recentErrors.pop();
+  }
+  s.lastSeen = Date.now();
+  saveDB();
+}
+
+// adaptive weight
+function getWeight(word){
+  var s = getStats(word);
+  if(s.correct >= 3 && s.streak >= 3) return 0.15;
+  if(s.wrong > s.correct && s.wrong > 0) return 2.5;
+  if(s.correct === 0 && s.wrong === 0) return 1.5;
+  return 1;
+}
+function isMastered(word){ var s = getStats(word); return s.correct >= 3 && s.streak >= 3; }
+function isWeak(word){ var s = getStats(word); return s.wrong > s.correct && s.wrong > 0; }
+
+function getWordPool(){
+  var pool = DB.words;
+  if(SCOPE === 'weak') pool = pool.filter(function(w){ return isWeak(w.e); });
+  else if(SCOPE === 'new') pool = pool.filter(function(w){ var s = getStats(w.e); return s.correct === 0 && s.wrong === 0; });
+  else if(SCOPE === 'recent') pool = pool.slice(-40);
+  if(pool.length < 4) pool = DB.words;
+  return pool;
+}
+function weightedSample(pool, n){
+  var weighted = [];
+  pool.forEach(function(w){
+    var count = Math.ceil(Math.max(0.1, getWeight(w.e)) * 10);
+    for(var i=0;i<count;i++) weighted.push(w);
+  });
+  var result = [], seen = {}, guard = 0;
+  while(result.length < n && result.length < pool.length && guard++ < 8000){
+    var w = weighted[Math.floor(Math.random()*weighted.length)];
+    if(w && !seen[w.e]){ seen[w.e] = true; result.push(w); }
+  }
+  return result;
+}
+function pickSentence(word){
+  var sentences = (word.sentences && word.sentences.length) ? word.sentences : ['This is a ___.'];
+  return sentences[Math.floor(Math.random()*sentences.length)];
+}
+// 把 ___ 換成真正的單字 → TTS 才不會念到底線
+function fillBlank(sent, word){
+  return String(sent||'').replace(/[_＿]{2,}/g, word).replace(/\s+/g,' ').trim();
+}
+
+// ═══════════════════════════════════════════════════════
+// TTS — 佇列式，可連續念多次
+// ═══════════════════════════════════════════════════════
+var ttsSupported = ('speechSynthesis' in window);
+var TTS = { queue: [], idx: 0, playing: false, onDone: null, seq: 0 };
+
+function stopSpeak(){
+  TTS.seq++; TTS.queue = []; TTS.idx = 0; TTS.playing = false; TTS.onDone = null;
+  try { window.speechSynthesis.cancel(); } catch(e){}
+  setSpeakingUI(false);
+}
+function setSpeakingUI(on){
+  var b = document.getElementById('tts-status');
+  if(b) b.classList.toggle('speaking', !!on);
+  var l = document.getElementById('listen-big');
+  if(l) l.classList.toggle('playing', !!on);
+  var s = document.getElementById('skip-tts');
+  if(s) s.style.display = on ? '' : 'none';
+}
+function speakSeq(items, onDone){
+  var mySeq = ++TTS.seq;
+  try { window.speechSynthesis.cancel(); } catch(e){}
+  if(!ttsSupported || !items || !items.length){ if(onDone) setTimeout(onDone, 30); return; }
+  TTS.queue = items.slice(); TTS.idx = 0; TTS.onDone = onDone; TTS.playing = true;
+  setSpeakingUI(true);
+  // Chrome 需要一點延遲，cancel() 後馬上 speak() 會沒聲音
+  setTimeout(function(){ _playNext(mySeq); }, 120);
+}
+function _playNext(mySeq){
+  if(mySeq !== TTS.seq) return;
+  if(TTS.idx >= TTS.queue.length){
+    TTS.playing = false; setSpeakingUI(false);
+    var cb = TTS.onDone; TTS.onDone = null;
+    if(cb) cb();
+    return;
+  }
+  var it = TTS.queue[TTS.idx++];
+  var u = new SpeechSynthesisUtterance(it.t);
+  u.lang = 'en-US'; u.rate = it.r || 0.85; u.pitch = 1;
+  var advanced = false;
+  var go = function(){
+    if(advanced) return; advanced = true;
+    setTimeout(function(){ _playNext(mySeq); }, it.gap || 260);
+  };
+  u.onend = go;
+  u.onerror = go;
+  try { window.speechSynthesis.speak(u); }
+  catch(e){ go(); }
+  // 保險：某些瀏覽器不觸發 onend
+  setTimeout(function(){ if(!advanced && mySeq === TTS.seq) go(); }, 1200 + it.t.length * 95);
+}
+function speak(text, rate){ speakSeq([{t:text, r:rate||0.85}]); }
+function testTTS(){ speak('Hello! I am ready to help you practise English.', 0.9); }
+function speakWord(w){ speak(w, 0.8); }
+function speakSentence(s){ speak(s, 0.75); }
+function skipTTS(){
+  var cb = TTS.onDone;
+  stopSpeak();
+  if(cb) cb();
+}
+// 換題複誦：單字 N 次 + 完整句子 N 次
+function repeatItems(word, sent){
+  var n = DB.settings.repeat || 0, arr = [], i;
+  for(i=0;i<n;i++) arr.push({t:word, r:0.78, gap:380});
+  if(sent){
+    var full = fillBlank(sent, word);
+    for(i=0;i<n;i++) arr.push({t:full, r:0.72, gap:480});
+  }
+  return arr;
+}
+
+// ═══════════════════════════════════════════════════════
+// UTIL
+// ═══════════════════════════════════════════════════════
+function shuffle(a){ var b = a.slice(); for(var i=b.length-1;i>0;i--){ var j = Math.floor(Math.random()*(i+1)); var t=b[i]; b[i]=b[j]; b[j]=t; } return b; }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function pad(n){ return n<10 ? '0'+n : String(n); }
+function showToast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+function buildOpts(w){
+  var pool = (w.opts && w.opts.length) ? w.opts.slice() : [w.e];
+  var others = pool.filter(function(x){ return x.toLowerCase() !== w.e.toLowerCase(); })
+                   .map(function(x){ return x.toLowerCase(); });
+  if(others.length < 3){
+    var same = DB.words.filter(function(x){
+      return x.e !== w.e && others.indexOf(x.e) < 0 && w.pos && x.pos === w.pos;
+    });
+    var any = DB.words.filter(function(x){ return x.e !== w.e && others.indexOf(x.e) < 0; });
+    var cands = shuffle(same.length >= 3 ? same : any);
+    while(others.length < 3 && cands.length) others.push(cands.shift().e.toLowerCase());
+  }
+  others = shuffle(others).slice(0,3);
+  return shuffle([w.e.toLowerCase()].concat(others));
+}
+// 編輯距離（防呆：偵測拼錯）
+// 用 Damerau-Levenshtein：把「兩個字母打反」(trian → train) 算成 1 個錯，
+// 因為那是最常見的打字錯誤。
+function editDist(a, b){
+  a = a.toLowerCase(); b = b.toLowerCase();
+  var m = a.length, n = b.length, i, j;
+  var d = [];
+  for(i=0;i<=m;i++){ d[i] = [i]; }
+  for(j=0;j<=n;j++){ d[0][j] = j; }
+  for(i=1;i<=m;i++){
+    for(j=1;j<=n;j++){
+      var cost = (a[i-1] === b[j-1]) ? 0 : 1;
+      d[i][j] = Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+cost);
+      if(i>1 && j>1 && a[i-1]===b[j-2] && a[i-2]===b[j-1]){
+        d[i][j] = Math.min(d[i][j], d[i-2][j-2] + 1);   // 字母打反
+      }
+    }
+  }
+  return d[m][n];
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+function goPage(p){
+  stopSpeak(); stopRec();
+  document.querySelectorAll('.page').forEach(function(el){ el.classList.remove('on'); });
+  document.querySelectorAll('.nav-btn').forEach(function(el){ el.classList.remove('on'); });
+  document.getElementById('page-'+p).classList.add('on');
+  var idx = {home:0, speak:1, manage:2, stats:3}[p] || 0;
+  document.querySelectorAll('.nav-btn')[idx].classList.add('on');
+  if(p === 'manage') renderWordList();
+  if(p === 'stats') renderStats();
+  if(p === 'speak') document.getElementById('sr-warn').style.display = SRCls ? 'none' : 'block';
+  window.scrollTo(0,0);
+}
+function selMode(m){
+  MODE = m;
+  document.querySelectorAll('.mode-grid .mode-card').forEach(function(el){
+    if(el.id.indexOf('mode-') === 0) el.classList.remove('on');
+  });
+  document.getElementById('mode-'+m).classList.add('on');
+}
+function selScope(s, el){
+  SCOPE = s;
+  document.querySelectorAll('#scope-filter .filter-chip').forEach(function(e){ e.classList.remove('on'); });
+  el.classList.add('on');
+}
+function selRepeat(n, el){
+  DB.settings.repeat = n; saveDB();
+  document.querySelectorAll('#rep-filter .filter-chip').forEach(function(e){ e.classList.remove('on'); });
+  el.classList.add('on');
+}
+function syncRepeatChips(){
+  var chips = document.querySelectorAll('#rep-filter .filter-chip');
+  var map = {0:0, 1:1, 2:2, 3:3};
+  chips.forEach(function(c, i){ c.classList.toggle('on', i === map[DB.settings.repeat]); });
+}
+// ═══════════════════════════════════════════════════════
+// GAME ENGINE
+// ═══════════════════════════════════════════════════════
+var G = {};
+
+function startGame(){
+  var pool = getWordPool();
+  if(pool.length < 2){ showToast('單字數量不足，請切換範圍或新增單字'); return; }
+  DB.sessions++; saveDB();
+  var n = Math.min(pool.length, MODE === 'match' ? 24 : 20);
+  var sample = weightedSample(pool, n);
+  if(MODE === 'tf'){
+    tfPool = shuffle(TF_DATA.slice());
+    n = Math.min(20, tfPool.length);
+  }
+  G = { mode:MODE, words:sample, idx:0, score:0,
+        total: MODE==='tf' ? n : sample.length,
+        wrong:[], tok:0, q:null, answered:false };
+  mState = {};
+  document.getElementById('home-select').style.display = 'none';
+  document.getElementById('home-game').style.display = 'block';
+  renderQuestion();
+}
+function nextQ(){
+  stopSpeak();
+  G.tok++; G.idx++; G.answered = false;
+  renderQuestion();
+}
+function renderQuestion(){
+  var el = document.getElementById('home-game');
+  if(G.idx >= G.total){ renderEnd(); return; }
+  var w = G.words[G.idx % G.words.length];
+  var pct = Math.round(G.idx / G.total * 100);
+  var prog = '<div class="prog-row">'
+    + '<div class="prog-wrap"><div class="prog-fill" style="width:'+pct+'%"></div></div>'
+    + '<div class="prog-label">'+G.idx+'/'+G.total+'</div>'
+    + '<div class="score-badge">'+G.score+'分</div></div>';
+
+  G.after = null;
+  if(G.mode === 'fill') el.innerHTML = prog + renderFill(w);
+  else if(G.mode === 'tf') el.innerHTML = prog + renderTF();
+  else if(G.mode === 'spell') el.innerHTML = prog + renderSpell(w);
+  else if(G.mode === 'lword') el.innerHTML = prog + renderListen(w, false);
+  else if(G.mode === 'lsent') el.innerHTML = prog + renderListen(w, true);
+  else if(G.mode === 'match'){ el.innerHTML = renderMatch(); return; }
+  if(G.after){ var f = G.after; G.after = null; setTimeout(f, 60); }
+  window.scrollTo(0,0);
+}
+// 共用底部：跳過語音 / 下一題
+function footHTML(extra){
+  return '<div class="qfoot">'
+    + (extra||'')
+    + '<button class="tts-btn" id="skip-tts" style="display:none" onclick="skipTTS()">⏭️ 跳過語音</button>'
+    + '<button class="btn btn-blue next-btn" id="next-btn" style="display:none" onclick="nextQ()">下一題 →</button>'
+    + '</div>';
+}
+// 答完題統一處理：答對→念完自動下一題；答錯→停下來等使用者按
+function afterAnswer(correct, items){
+  G.answered = true;
+  var nb = document.getElementById('next-btn');
+  if(nb) nb.style.display = '';
+  var tok = G.tok;
+  var done = function(){
+    if(G.tok !== tok) return;      // 使用者已經自己按過下一題
+    if(correct) nextQ();
+  };
+  if(items && items.length) speakSeq(items, done);
+  else setTimeout(done, correct ? 700 : 0);
+}
+function replayQ(){
+  if(!G.q) return;
+  if(G.mode === 'lword') speakSeq([{t:G.q.w.e,r:0.75,gap:400},{t:G.q.w.e,r:0.68}]);
+  else if(G.q.sent) speakSeq([{t:fillBlank(G.q.sent, G.q.w.e), r:0.72}]);
+  else speak(G.q.w.e, 0.78);
+}
+
+// ── FILL ─────────────────────────────────────────────
+function renderFill(w){
+  var sent = pickSentence(w);
+  var opts = buildOpts(w);
+  G.q = { w:w, sent:sent, opts:opts };
+  var displayed = esc(sent).replace(/[_＿]{2,}/g, '<span class="blank">＿＿＿</span>');
+  var optsHTML = opts.map(function(o, i){
+    return '<button class="opt" onclick="checkFill(this,'+i+')">'+esc(o)+'</button>';
+  }).join('');
+  return '<div class="card">'
+    + '<div class="card-title">選出正確單字</div>'
+    + '<div class="q-sentence">'+displayed+'</div>'
+    + '<div class="q-zh">'+esc(w.zh)+'</div>'
+    + '<div class="opts">'+optsHTML+'</div>'
+    + '<div class="feedback" id="fb"></div>'
+    + footHTML('<button class="tts-btn" onclick="speak(G.q.w.e,0.75)">🔊 念單字</button>'
+             + '<button class="tts-btn" onclick="speakSentence(fillBlank(G.q.sent,G.q.w.e))">🔊 念句子</button>')
+    + '</div>';
+}
+function checkFill(btn, i){
+  if(G.answered) return;
+  var w = G.q.w, choice = G.q.opts[i];
+  document.querySelectorAll('.opt').forEach(function(b){ b.disabled = true; });
+  var correct = (choice.toLowerCase() === w.e.toLowerCase());
+  btn.classList.add(correct ? 'ok' : 'no');
+  if(!correct){
+    document.querySelectorAll('.opt').forEach(function(b){
+      if(b.textContent.toLowerCase() === w.e.toLowerCase()) b.classList.add('ok');
+    });
+  }
+  recordResult(w.e, correct);
+  if(correct) G.score++; else G.wrong.push(w.e);
+  var fb = document.getElementById('fb');
+  var full = esc(fillBlank(G.q.sent, w.e)).replace(new RegExp('\\b'+w.e+'\\b','i'), '<b>'+esc(w.e)+'</b>');
+  if(correct){
+    fb.className = 'feedback ok';
+    fb.innerHTML = '✅ 正確！<br>' + full;
+  } else {
+    fb.className = 'feedback no';
+    fb.innerHTML = '❌ 答案是 <b>'+esc(w.e)+'</b>（'+esc(w.zh)+'）<br>' + full
+      + (w.note ? '<br>⚠️ '+esc(w.note) : '');
+  }
+  afterAnswer(correct, repeatItems(w.e, G.q.sent));
+}
+
+// ── TF ───────────────────────────────────────────────
+var tfPool = [];
+function renderTF(){
+  if(!tfPool.length) tfPool = shuffle(TF_DATA.slice());
+  var q = tfPool[G.idx % tfPool.length];
+  G.q = { w:{e:q.word, zh:''}, sent:null, tf:q };
+  return '<div class="card">'
+    + '<div class="card-title">這句話對還是錯？</div>'
+    + '<div class="q-sentence" style="margin-bottom:1rem">'+esc(q.s)+'</div>'
+    + '<div class="tf-row">'
+    + '<button class="tf-btn" onclick="checkTF(this,true)">✅ 正確</button>'
+    + '<button class="tf-btn" onclick="checkTF(this,false)">❌ 錯誤</button>'
+    + '</div>'
+    + '<div class="feedback" id="fb"></div>'
+    + footHTML('<button class="tts-btn" onclick="speakSentence(G.q.tf.s)">🔊 念整句</button>'
+             + '<button class="tts-btn" onclick="speak(G.q.tf.word,0.75)">🔊 念單字</button>')
+    + '</div>';
+}
+function checkTF(btn, ans){
+  if(G.answered) return;
+  var q = G.q.tf;
+  document.querySelectorAll('.tf-btn').forEach(function(b){ b.disabled = true; });
+  var correct = (ans === q.c);
+  btn.classList.add(correct ? 'ok' : 'no');
+  document.querySelectorAll('.tf-btn').forEach(function(b){
+    if((b.textContent.indexOf('正確') >= 0 && q.c) || (b.textContent.indexOf('錯誤') >= 0 && !q.c)) b.classList.add('ok');
+  });
+  recordResult(q.word, correct);
+  if(correct) G.score++; else G.wrong.push(q.word);
+  var fb = document.getElementById('fb');
+  fb.className = 'feedback ' + (correct ? 'ok' : 'no');
+  fb.innerHTML = (correct ? '✅ 正確！' : '❌ 答案是'+(q.c ? '【正確】' : '【錯誤】')) + '<br>' + esc(q.e);
+  // 對錯判斷：換題不自動念，要聽自己按上面的「念整句」
+  afterAnswer(correct, null);
+}
+
+// ── SPELL ────────────────────────────────────────────
+function renderSpell(w){
+  G.q = { w:w, sent:pickSentence(w), hint:false };
+  G.after = function(){ var i = document.getElementById('si'); if(i) i.focus(); };
+  return '<div class="card">'
+    + '<div class="card-title">看中文，拼出英文單字</div>'
+    + (w.note ? '<div class="warn-tag">⚠️ '+esc(w.note)+'</div>' : '')
+    + '<div class="spell-word">'+esc(w.zh)+'</div>'
+    + '<div class="spell-hint-text">'+esc(w.hint || (w.e.length+'個字母'))+'</div>'
+    + '<div class="spell-row">'
+    + '<input class="spell-inp" id="si" type="text" placeholder="輸入英文..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key===\'Enter\')checkSpell()">'
+    + '<button class="btn" id="spell-ok" onclick="checkSpell()">確認</button>'
+    + '<button class="btn btn-sm" id="spell-hint" onclick="showHint()">提示</button>'
+    + '</div>'
+    + '<div class="hint-letters" id="hl"></div>'
+    + '<div class="feedback" id="fb"></div>'
+    + footHTML()
+    + '</div>';
+}
+function showHint(){
+  G.q.hint = true;
+  var hl = document.getElementById('hl');
+  if(hl) hl.textContent = G.q.w.e.split('').map(function(c,i){ return i<2 ? c : '_'; }).join(' ');
+}
+function checkSpell(){
+  if(G.answered) return;
+  var w = G.q.w;
+  var si = document.getElementById('si');
+  var val = ((si && si.value) || '').trim().toLowerCase();
+  if(!val){ showToast('請先輸入英文單字'); return; }
+  var correct = (val === w.e.toLowerCase());
+  if(si) si.disabled = true;
+  ['spell-ok','spell-hint'].forEach(function(id){ var b = document.getElementById(id); if(b) b.disabled = true; });
+  recordResult(w.e, correct && !G.q.hint);
+  var fb = document.getElementById('fb');
+  if(correct){
+    fb.className = 'feedback ok';
+    fb.innerHTML = '✅ 正確！' + (G.q.hint ? '（使用提示，不計分）' : '');
+    if(!G.q.hint) G.score++;
+  } else {
+    fb.className = 'feedback no';
+    fb.innerHTML = '❌ 答案是 <b>'+esc(w.e)+'</b>（'+esc(w.zh)+'）'
+      + (val ? '<br>你寫的是：'+esc(val) : '')
+      + (w.note ? '<br>⚠️ '+esc(w.note) : '');
+    G.wrong.push(w.e);
+  }
+  afterAnswer(correct, [{t:w.e, r:0.75, gap:350},{t:w.e, r:0.7}]);
+}
+
+// ── LISTEN（聽力：單字 / 句子填空）────────────────────
+function renderListen(w, isSent){
+  var sent = pickSentence(w);
+  var opts = buildOpts(w);
+  G.q = { w:w, sent:sent, opts:opts, revealed:false };
+  var play = isSent
+    ? 'speakSeq([{t:fillBlank(G.q.sent,G.q.w.e),r:0.72}])'
+    : 'speakSeq([{t:G.q.w.e,r:0.75,gap:400},{t:G.q.w.e,r:0.68}])';
+  G.after = function(){ replayQ(); };   // 進題目自動念一次
+  var optsHTML = opts.map(function(o,i){
+    return '<button class="opt" onclick="checkListen(this,'+i+')">'+esc(o)+'</button>';
+  }).join('');
+  return '<div class="card">'
+    + '<div class="card-title">'+(isSent ? '聽句子，選出空格裡的單字' : '聽發音，選出正確的單字')+'</div>'
+    + '<div class="listen-box">'
+    + '<button class="listen-big" id="listen-big" onclick="'+play+'">🔊</button>'
+    + '<div class="listen-tip">'+(isSent ? '點喇叭可以再聽一次整句' : '點喇叭可以再聽一次')+'</div>'
+    + '</div>'
+    + (isSent ? '<div id="peek" style="margin-top:12px;"></div>' : '')
+    + '<div class="opts" style="margin-top:14px;">'+optsHTML+'</div>'
+    + '<div class="feedback" id="fb"></div>'
+    + footHTML(isSent ? '<button class="tts-btn" id="peek-btn" onclick="peekSentence()">👀 看句子</button>' : '')
+    + '</div>';
+}
+function peekSentence(){
+  var p = document.getElementById('peek');
+  if(!p) return;
+  G.q.revealed = true;
+  p.innerHTML = '<div class="q-sentence" style="font-size:15px;">'
+    + esc(G.q.sent).replace(/[_＿]{2,}/g, '<span class="blank">＿＿＿</span>') + '</div>';
+  var b = document.getElementById('peek-btn');
+  if(b) b.style.display = 'none';
+}
+function checkListen(btn, i){
+  if(G.answered) return;
+  var w = G.q.w, choice = G.q.opts[i];
+  document.querySelectorAll('.opt').forEach(function(b){ b.disabled = true; });
+  var correct = (choice.toLowerCase() === w.e.toLowerCase());
+  btn.classList.add(correct ? 'ok' : 'no');
+  if(!correct){
+    document.querySelectorAll('.opt').forEach(function(b){
+      if(b.textContent.toLowerCase() === w.e.toLowerCase()) b.classList.add('ok');
+    });
+  }
+  recordResult(w.e, correct);
+  if(correct) G.score++; else G.wrong.push(w.e);
+  var fb = document.getElementById('fb');
+  var full = esc(fillBlank(G.q.sent, w.e));
+  fb.className = 'feedback ' + (correct ? 'ok' : 'no');
+  fb.innerHTML = (correct ? '✅ 正確！' : '❌ 答案是 <b>'+esc(w.e)+'</b>')
+    + '（'+esc(w.zh)+'）<br>' + full + (w.note ? '<br>⚠️ '+esc(w.note) : '');
+  afterAnswer(correct, repeatItems(w.e, G.q.sent));
+}
+
+// ── MATCH ────────────────────────────────────────────
+var mState = {};
+function renderMatch(){
+  if(!mState.inited || mState.setIdx >= (mState.sets||[]).length){
+    if(!mState.inited){
+      var sampled = weightedSample(getWordPool(), 24);
+      var sets = [];
+      for(var i=0;i<sampled.length;i+=6) sets.push(sampled.slice(i, i+6));
+      mState = { inited:true, sets:sets, setIdx:0, matched:[], sel:null, score:0,
+                 total:sampled.length, cards:null, cardsSetIdx:-1 };
+      G.total = mState.total; G.idx = 0;
+    }
+  }
+  if(mState.setIdx >= mState.sets.length){ G.score = mState.score; renderEnd(); return ''; }
+  var set = mState.sets[mState.setIdx];
+  if(!mState.cards || mState.cardsSetIdx !== mState.setIdx){
+    var en = set.map(function(w){ return {id:w.e, label:w.e, t:'e'}; });
+    var zh = set.map(function(w){ return {id:w.e, label:w.zh, t:'z'}; });
+    mState.cards = shuffle(en.concat(zh));
+    mState.cardsSetIdx = mState.setIdx;
+  }
+  var total = mState.sets.reduce(function(a,s){ return a + s.length; }, 0);
+  var done = mState.sets.slice(0, mState.setIdx).reduce(function(a,s){ return a + s.length; }, 0) + mState.matched.length;
+  var pct = Math.round(done / total * 100);
+  var cards = mState.cards.map(function(c, i){
+    var cl = 'mc' + (mState.matched.indexOf(c.id) >= 0 ? ' mat' : (mState.sel && mState.sel.i === i ? ' sel' : ''));
+    return '<div class="'+cl+'" id="mc'+i+'" onclick="pickMatch('+i+')">'+esc(c.label)+'</div>';
+  }).join('');
+  return '<div class="prog-row"><div class="prog-wrap"><div class="prog-fill" style="width:'+pct+'%"></div></div>'
+    + '<div class="prog-label">組 '+(mState.setIdx+1)+'/'+mState.sets.length+'</div>'
+    + '<div class="score-badge">'+mState.score+'分</div></div>'
+    + '<div class="card"><div class="card-title">把英文和中文配對起來</div>'
+    + '<div class="match-grid">'+cards+'</div>'
+    + '<div class="feedback" id="mfb" style="margin-top:8px;"></div></div>';
+}
+function pickMatch(i){
+  var c = mState.cards[i];
+  if(mState.matched.indexOf(c.id) >= 0) return;
+  var el = document.getElementById('home-game');
+  if(mState.sel && mState.sel.i === i){ mState.sel = null; el.innerHTML = renderMatch(); return; }
+  if(!mState.sel){ mState.sel = {i:i, card:c}; el.innerHTML = renderMatch(); return; }
+  var prev = mState.sel; mState.sel = null;
+  if(prev.card.id === c.id && prev.card.t !== c.t){
+    mState.matched.push(c.id); mState.score++;
+    recordResult(c.id, true);
+    speak(c.id, 0.8);
+    el.innerHTML = renderMatch();
+    if(mState.matched.length === mState.sets[mState.setIdx].length){
+      setTimeout(function(){
+        mState.setIdx++; mState.matched = []; mState.cards = null;
+        if(mState.setIdx >= mState.sets.length){ G.score = mState.score; renderEnd(); }
+        else el.innerHTML = renderMatch();
+      }, 800);
+    }
+  } else {
+    recordResult(c.id, false); G.wrong.push(c.id);
+    [prev.i, i].forEach(function(idx){
+      var e = document.getElementById('mc'+idx);
+      if(e){ e.classList.add('shake'); setTimeout(function(){ e.classList.remove('shake'); }, 400); }
+    });
+    var fb = document.getElementById('mfb');
+    if(fb){ fb.className = 'feedback no'; fb.innerHTML = '❌ 不對，再試試看！'; }
+  }
+}
+
+// ── END ──────────────────────────────────────────────
+function renderEnd(){
+  stopSpeak();
+  mState = {};
+  var pct = Math.round(G.score / Math.max(G.total,1) * 100);
+  var msg = pct >= 85 ? '太棒了！繼續保持！' : pct >= 60 ? '不錯！再多練習幾次吧！' : '繼續加油！重複是最好的方法！';
+  var wrongWords = [];
+  G.wrong.forEach(function(w){ if(wrongWords.indexOf(w) < 0) wrongWords.push(w); });
+  var missedHTML = '';
+  if(wrongWords.length){
+    missedHTML = '<div class="card"><div class="card-title">這次答錯的單字</div><div class="missed-list">'
+      + wrongWords.map(function(e){
+          var w = DB.words.find(function(x){ return x.e === e; });
+          return '<div class="missed-item"><span class="missed-en">'+esc(e)+'</span>'
+            + '<span class="missed-zh">'+esc(w ? w.zh : '')+'</span>'
+            + '<button class="tts-btn" onclick="speak(\''+e.replace(/'/g,"\\'")+'\',0.8)">🔊</button></div>';
+        }).join('')
+      + '</div></div>';
+  }
+  document.getElementById('home-game').innerHTML =
+    '<div class="end-screen">'
+    + '<div class="end-score">'+G.score+' / '+G.total+'</div>'
+    + '<div class="end-msg">'+msg+'</div>'
+    + '<div class="end-detail">正確率 '+pct+'%</div>'
+    + '<div class="btn-row" style="justify-content:center">'
+    + '<button class="btn btn-blue" onclick="startGame()">再練一次</button>'
+    + '<button class="btn" onclick="backToSelect()">換模式</button>'
+    + '</div></div>' + missedHTML;
+}
+function backToSelect(){
+  stopSpeak();
+  document.getElementById('home-select').style.display = '';
+  document.getElementById('home-game').style.display = 'none';
+}
+// ═══════════════════════════════════════════════════════
+// 口說練習（語音辨識）
+// ═══════════════════════════════════════════════════════
+var SRCls = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+var SP = { mode:'word', words:[], idx:0, score:0, total:0, rec:null, recording:false, done:false };
+
+function selSpMode(m){
+  SP.mode = m;
+  ['sp-word','sp-sent'].forEach(function(id){ document.getElementById(id).classList.remove('on'); });
+  document.getElementById(m === 'word' ? 'sp-word' : 'sp-sent').classList.add('on');
+}
+function startSpeak(){
+  if(!SRCls){ showToast('這個瀏覽器不支援語音辨識，請改用 Chrome 或 Safari'); return; }
+  var pool = getWordPool();
+  if(pool.length < 2){ showToast('單字數量不足'); return; }
+  SP.words = weightedSample(pool, Math.min(pool.length, 10));
+  SP.idx = 0; SP.score = 0; SP.total = SP.words.length; SP.done = false;
+  document.getElementById('speak-select').style.display = 'none';
+  document.getElementById('speak-game').style.display = 'block';
+  renderSpeakQ();
+}
+function renderSpeakQ(){
+  var el = document.getElementById('speak-game');
+  if(SP.idx >= SP.total){ renderSpeakEnd(); return; }
+  var w = SP.words[SP.idx];
+  var target = SP.mode === 'word' ? w.e : fillBlank(pickSentence(w), w.e);
+  SP.target = target; SP.w = w; SP.done = false;
+  var pct = Math.round(SP.idx / SP.total * 100);
+  el.innerHTML =
+    '<div class="prog-row">'
+    + '<div class="prog-wrap"><div class="prog-fill" style="width:'+pct+'%"></div></div>'
+    + '<div class="prog-label">'+SP.idx+'/'+SP.total+'</div>'
+    + '<div class="score-badge">'+SP.score+'分</div></div>'
+    + '<div class="card">'
+    + '<div class="card-title">念念看這句英文</div>'
+    + '<div class="target-text">'+esc(target)+'</div>'
+    + '<div class="q-zh">'+esc(w.zh)+'</div>'
+    + '<div class="btn-row"><button class="tts-btn" onclick="speakSentence(SP.target)">🔊 先聽一次範例</button></div>'
+    + '<div style="text-align:center;margin:20px 0 6px;">'
+    + '<button class="mic-btn" id="mic" onclick="toggleRec()">🎤</button>'
+    + '<div class="listen-tip" id="mic-tip">點麥克風開始念</div>'
+    + '</div>'
+    + '<div class="heard-text" id="heard"></div>'
+    + '<div class="feedback" id="sfb"></div>'
+    + '<div class="qfoot">'
+    + '<button class="tts-btn" onclick="skipSpeakQ()">略過這題</button>'
+    + '<button class="btn btn-blue next-btn" id="sp-next" style="display:none" onclick="nextSpeakQ()">下一題 →</button>'
+    + '</div></div>';
+  window.scrollTo(0,0);
+}
+function toggleRec(){
+  if(SP.recording){ stopRec(); return; }
+  if(!SRCls){ showToast('這個瀏覽器不支援語音辨識'); return; }
+  stopSpeak();  // 避免喇叭的聲音被麥克風收進去
+  var rec;
+  try { rec = new SRCls(); } catch(e){ showToast('無法開啟麥克風'); return; }
+  rec.lang = 'en-US';
+  rec.interimResults = false;
+  rec.continuous = false;
+  rec.maxAlternatives = 3;
+  SP.rec = rec; SP.recording = true;
+  setMicUI(true, '🔴 錄音中... 請念出上面的英文');
+  rec.onresult = function(ev){
+    var alts = [];
+    for(var i=0;i<ev.results[0].length;i++) alts.push(ev.results[0][i].transcript);
+    judgeSpeak(alts);
+  };
+  rec.onerror = function(e){
+    SP.recording = false; setMicUI(false, '點麥克風開始念');
+    if(e.error === 'not-allowed' || e.error === 'service-not-allowed')
+      showToast('❌ 麥克風沒有權限，請在瀏覽器設定允許');
+    else if(e.error === 'no-speech') showToast('沒聽到聲音，再試一次看看');
+    else showToast('語音辨識失敗：' + e.error);
+  };
+  rec.onend = function(){
+    SP.recording = false;
+    if(!SP.done) setMicUI(false, '點麥克風再念一次');
+  };
+  try { rec.start(); } catch(e){ SP.recording = false; setMicUI(false, '點麥克風開始念'); }
+}
+function stopRec(){
+  if(SP.rec && SP.recording){ try { SP.rec.stop(); } catch(e){} }
+  SP.recording = false;
+}
+function setMicUI(on, tip){
+  var m = document.getElementById('mic'), t = document.getElementById('mic-tip');
+  if(m) m.classList.toggle('rec', !!on);
+  if(t) t.textContent = tip;
+}
+function normSp(s){
+  return String(s||'').toLowerCase().replace(/[^a-z0-9\s']/g,' ').replace(/\s+/g,' ').trim();
+}
+function scoreSpeak(said, target){
+  var a = normSp(said).split(' ').filter(Boolean);
+  var b = normSp(target).split(' ').filter(Boolean);
+  if(!b.length) return 0;
+  var pool = a.slice(), hit = 0;
+  b.forEach(function(word){
+    var i = pool.indexOf(word);
+    if(i >= 0){ hit++; pool.splice(i,1); return; }
+    // 允許小拼字誤差（辨識常有小差異）
+    for(var j=0;j<pool.length;j++){
+      if(word.length > 3 && editDist(pool[j], word) <= 1){ hit++; pool.splice(j,1); return; }
+    }
+  });
+  return Math.round(hit / b.length * 100);
+}
+function judgeSpeak(alts){
+  SP.done = true;
+  SP.recording = false;
+  var best = '', bestScore = -1;
+  alts.forEach(function(a){
+    var s = scoreSpeak(a, SP.target);
+    if(s > bestScore){ bestScore = s; best = a; }
+  });
+  setMicUI(false, '想再念一次也可以');
+  var pass = bestScore >= (SP.mode === 'word' ? 100 : 70);
+  document.getElementById('heard').innerHTML = '👂 我聽到的是：<b>'+esc(best)+'</b>';
+  var fb = document.getElementById('sfb');
+  fb.className = 'feedback ' + (pass ? 'ok' : 'no');
+  fb.innerHTML = (pass ? '✅ 很棒！發音很清楚' : '❌ 再試一次')
+    + '　<span class="score-ring">'+bestScore+'%</span>'
+    + '<br>正確答案：<b>'+esc(SP.target)+'</b>';
+  recordResult(SP.w.e, pass);
+  if(pass && !SP._scored){ SP.score++; SP._scored = true; }
+  document.getElementById('sp-next').style.display = '';
+}
+function skipSpeakQ(){ nextSpeakQ(); }
+function nextSpeakQ(){
+  stopRec(); stopSpeak();
+  SP._scored = false;
+  SP.idx++;
+  renderSpeakQ();
+}
+function renderSpeakEnd(){
+  var pct = Math.round(SP.score / Math.max(SP.total,1) * 100);
+  document.getElementById('speak-game').innerHTML =
+    '<div class="end-screen">'
+    + '<div class="end-score">'+SP.score+' / '+SP.total+'</div>'
+    + '<div class="end-msg">'+(pct>=80?'發音很棒！':'多念幾次會更順！')+'</div>'
+    + '<div class="end-detail">通過率 '+pct+'%</div>'
+    + '<div class="btn-row" style="justify-content:center">'
+    + '<button class="btn btn-blue" onclick="startSpeak()">再練一次</button>'
+    + '<button class="btn" onclick="backToSpeakSelect()">回上一頁</button>'
+    + '</div></div>';
+}
+function backToSpeakSelect(){
+  stopRec(); stopSpeak();
+  document.getElementById('speak-select').style.display = '';
+  document.getElementById('speak-game').style.display = 'none';
+}
+// ═══════════════════════════════════════════════════════
+// 單字管理 + 防呆檢查
+// ═══════════════════════════════════════════════════════
+function selAddTab(t){
+  document.getElementById('tab-one').classList.toggle('on', t === 'one');
+  document.getElementById('tab-many').classList.toggle('on', t === 'many');
+  document.getElementById('add-one').style.display = t === 'one' ? '' : 'none';
+  document.getElementById('add-many').style.display = t === 'many' ? '' : 'none';
+}
+
+// 核心防呆：回傳 {ok, word, errors[], warns[]}
+function validateWord(raw, pending){
+  var errors = [], warns = [];
+  var en = String(raw.en||'').trim().toLowerCase().replace(/\s+/g,' ');
+  var zh = String(raw.zh||'').trim();
+
+  if(!en) errors.push('沒有填英文單字');
+  else {
+    if(/[一-鿿]/.test(en)) errors.push('英文欄位裡有中文字');
+    else if(!/^[a-z][a-z '\-]*$/.test(en)) errors.push('英文只能用英文字母（可含空格、- 和 \'）');
+    if(en.length === 1) warns.push('只有一個字母，確定嗎？');
+    if(en.length > 24) warns.push('這個字有點長，確定沒打錯嗎？');
+  }
+  if(!zh) errors.push('沒有填中文意思');
+  else if(/^[a-zA-Z0-9\s.,'-]+$/.test(zh)) warns.push('中文意思看起來是英文，是不是兩欄填反了？');
+
+  if(en && !errors.length){
+    if(DB.words.find(function(w){ return w.e === en; })) errors.push('單字庫裡已經有「'+en+'」了');
+    if(pending && pending.indexOf(en) >= 0) errors.push('這批裡面重複出現');
+    // 拼字相近提醒
+    if(en.length >= 4){
+      var near = DB.words.filter(function(w){ return Math.abs(w.e.length-en.length) <= 1 && editDist(w.e, en) === 1; })
+                         .slice(0,3).map(function(w){ return w.e; });
+      if(near.length) warns.push('拼法很像已有的：' + near.join('、') + '，確定不是打錯嗎？');
+    }
+  }
+
+  // 例句處理：自動挖空 + 檢查
+  var sents = [];
+  (raw.sentences||[]).forEach(function(s){
+    s = String(s||'').trim();
+    if(!s) return;
+    if(!/[_＿]{2,}/.test(s)){
+      var re = new RegExp('\\b' + en.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\b', 'gi');
+      if(en && re.test(s)){ s = s.replace(re, '___'); warns.push('例句沒有 ___，已自動幫你挖空'); }
+      else { warns.push('例句「'+s.slice(0,18)+'…」沒有空格也沒有這個單字，已略過'); return; }
+    }
+    sents.push(s);
+  });
+  if(!sents.length && en && !errors.length){
+    sents = ['I need to learn the word ___.'];
+    warns.push('沒有例句，先給一句通用的（之後可以再補）');
+  }
+
+  var word = {
+    e: en, zh: zh,
+    pos: String(raw.pos||'').trim(),
+    hint: String(raw.hint||'').trim() || (en.length + '個字母'),
+    sentences: sents,
+    note: String(raw.note||'').trim(),
+    opts: [en]     // 干擾選項出題時自動從題庫挑同詞性的字
+  };
+  return { ok: errors.length === 0, word: word, errors: errors, warns: warns };
+}
+
+// 即時提示（打字時）
+function liveCheckEn(){
+  var el = document.getElementById('add-en');
+  var live = document.getElementById('en-live');
+  var en = (el.value||'').trim().toLowerCase();
+  el.classList.remove('bad');
+  if(!en){ live.textContent = ''; live.style.color=''; return; }
+  if(/[一-鿿]/.test(en)){ el.classList.add('bad'); live.textContent = '⚠️ 這裡要填英文喔'; live.style.color = 'var(--red-text)'; return; }
+  if(DB.words.find(function(w){ return w.e === en; })){
+    el.classList.add('bad'); live.textContent = '⚠️ 單字庫已經有這個字了'; live.style.color = 'var(--red-text)'; return;
+  }
+  var near = DB.words.filter(function(w){ return w.e.length >= 4 && editDist(w.e, en) === 1; }).slice(0,2).map(function(w){ return w.e; });
+  if(near.length){ live.textContent = '💡 很像：' + near.join('、') + '（確定不是要打這個嗎？）'; live.style.color = 'var(--yellow-text)'; return; }
+  live.textContent = '✅ 可以使用'; live.style.color = 'var(--green-text)';
+}
+
+// ── 單筆新增 ──────────────────────────────────────────
+var _pendingOne = null;
+function checkOne(){
+  var raw = {
+    en: document.getElementById('add-en').value,
+    zh: document.getElementById('add-zh').value,
+    pos: document.getElementById('add-pos').value,
+    hint: document.getElementById('add-hint').value,
+    note: document.getElementById('add-note').value,
+    sentences: (document.getElementById('add-sentences').value||'').split('|')
+  };
+  var r = validateWord(raw, null);
+  var box = document.getElementById('one-result');
+  if(!r.ok){
+    box.innerHTML = '<div class="feedback no" style="display:block">❌ 還不能新增：<br>'
+      + r.errors.map(function(e){ return '• '+esc(e); }).join('<br>') + '</div>';
+    return;
+  }
+  _pendingOne = r.word;
+  var w = r.word;
+  box.innerHTML = '<div style="padding:12px;background:var(--blue-bg);border:1px solid var(--blue);border-radius:var(--radius-sm);">'
+    + '<div style="font-size:13px;font-weight:600;color:var(--blue-text);margin-bottom:8px;">請確認要新增的內容</div>'
+    + '<div style="font-size:14px;line-height:1.8;">'
+    + '<b>'+esc(w.e)+'</b>'+(w.pos?' <span style="color:var(--text3)">('+esc(w.pos)+')</span>':'')+'　'+esc(w.zh)+'<br>'
+    + '<span style="font-size:12px;color:var(--text2)">例句：'+w.sentences.map(esc).join('<br>　　　')+'</span>'
+    + (w.note ? '<br><span style="font-size:12px;color:var(--yellow-text)">⚠️ '+esc(w.note)+'</span>' : '')
+    + '</div>'
+    + (r.warns.length ? '<div style="margin-top:8px;font-size:12px;color:var(--yellow-text);line-height:1.6;">'
+        + r.warns.map(function(x){ return '⚠️ '+esc(x); }).join('<br>') + '</div>' : '')
+    + '<div class="btn-row"><button class="btn btn-blue btn-sm" onclick="confirmOne()">確認新增</button>'
+    + '<button class="btn btn-sm" onclick="cancelOne()">再改一下</button></div>'
+    + '</div>';
+}
+function confirmOne(){
+  if(!_pendingOne) return;
+  if(DB.words.find(function(w){ return w.e === _pendingOne.e; })){ showToast('已經有這個字了'); return; }
+  DB.custom = DB.custom || [];
+  DB.custom.push(_pendingOne);
+  DB.words.push(_pendingOne);
+  saveDB(); updateTotalCount();
+  var added = _pendingOne.e;
+  _pendingOne = null;
+  ['add-en','add-zh','add-pos','add-hint','add-sentences','add-note'].forEach(function(id){
+    var el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('en-live').textContent = '';
+  document.getElementById('one-result').innerHTML =
+    '<div class="feedback ok" style="display:block">✅ 已加入「'+esc(added)+'」　'
+    + '<button class="btn btn-sm" onclick="undoAdd([\''+added+'\'])">復原</button></div>';
+  renderWordList();
+}
+function cancelOne(){ _pendingOne = null; document.getElementById('one-result').innerHTML = ''; }
+
+// ── 批次新增 ──────────────────────────────────────────
+var _pendingBulk = null;
+function fillBulkExample(){
+  document.getElementById('bulk-text').value =
+    'apple, 蘋果, n, I eat an ___ every day.|She likes ___ juice.\n'
+  + 'happy, 快樂的, adj\n'
+  + 'window, 窗戶';
+}
+function parseBulkLine(line){
+  var parts = line.split(/[,，\t]/).map(function(s){ return s.trim(); });
+  return {
+    en: parts[0] || '',
+    zh: parts[1] || '',
+    pos: parts[2] || '',
+    sentences: (parts.slice(3).join(',') || '').split('|'),
+    hint: '', note: ''
+  };
+}
+function checkBulk(){
+  var text = document.getElementById('bulk-text').value || '';
+  var lines = text.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+  var box = document.getElementById('bulk-result');
+  if(!lines.length){ box.innerHTML = '<div class="feedback no" style="display:block">❌ 還沒貼上任何單字</div>'; return; }
+  if(lines.length > 200){ box.innerHTML = '<div class="feedback no" style="display:block">❌ 一次最多 200 個，請分批</div>'; return; }
+  var good = [], rows = [], pending = [];
+  lines.forEach(function(line, i){
+    var r = validateWord(parseBulkLine(line), pending);
+    if(r.ok){
+      pending.push(r.word.e); good.push(r.word);
+      rows.push('<div class="chk-item'+(r.warns.length?' chk-warn':'')+'">'
+        + '<span style="min-width:18px">✅</span><span class="chk-en">'+esc(r.word.e)+'</span>'
+        + '<span class="chk-msg">'+esc(r.word.zh)
+        + (r.warns.length ? '<br>⚠️ '+r.warns.map(esc).join('；') : '') + '</span></div>');
+    } else {
+      rows.push('<div class="chk-item chk-bad">'
+        + '<span style="min-width:18px">❌</span><span class="chk-en">'+esc(parseBulkLine(line).en || ('第'+(i+1)+'行'))+'</span>'
+        + '<span class="chk-msg">'+r.errors.map(esc).join('；')+'</span></div>');
+    }
+  });
+  _pendingBulk = good;
+  box.innerHTML = '<div class="card" style="margin-bottom:0;">'
+    + '<div class="card-title">檢查結果：可新增 '+good.length+' 個，有問題 '+(lines.length-good.length)+' 個</div>'
+    + rows.join('')
+    + '<div class="btn-row">'
+    + (good.length ? '<button class="btn btn-blue" onclick="confirmBulk()">✅ 確認新增 '+good.length+' 個</button>' : '')
+    + '<button class="btn" onclick="cancelBulk()">取消</button></div>'
+    + (lines.length - good.length ? '<div class="form-help">有問題的那幾行不會被加入，你可以修正後再檢查一次。</div>' : '')
+    + '</div>';
+}
+function confirmBulk(){
+  if(!_pendingBulk || !_pendingBulk.length) return;
+  var added = [];
+  DB.custom = DB.custom || [];
+  _pendingBulk.forEach(function(w){
+    if(DB.words.find(function(x){ return x.e === w.e; })) return;
+    DB.custom.push(w); DB.words.push(w); added.push(w.e);
+  });
+  saveDB(); updateTotalCount(); renderWordList();
+  _pendingBulk = null;
+  document.getElementById('bulk-text').value = '';
+  document.getElementById('bulk-result').innerHTML =
+    '<div class="feedback ok" style="display:block">✅ 已新增 '+added.length+' 個單字：'+esc(added.join('、'))+'　'
+    + '<button class="btn btn-sm" onclick=\'undoAdd('+JSON.stringify(added)+')\'>復原</button></div>';
+}
+function cancelBulk(){ _pendingBulk = null; document.getElementById('bulk-result').innerHTML = ''; }
+
+// 復原（防呆：加錯可以馬上收回）
+function undoAdd(list){
+  DB.custom = (DB.custom||[]).filter(function(w){ return list.indexOf(w.e) < 0; });
+  DB.words = DB.words.filter(function(w){
+    return list.indexOf(w.e) < 0 || BUILTIN.find(function(b){ return b.e === w.e; });
+  });
+  list.forEach(function(e){ delete DB.stats[e]; });
+  saveDB(); updateTotalCount(); renderWordList();
+  document.getElementById('one-result').innerHTML = '';
+  document.getElementById('bulk-result').innerHTML = '';
+  showToast('已復原，移除了 '+list.length+' 個單字');
+}
+
+// ── 單字列表 ──────────────────────────────────────────
+var wFilter = 'all';
+function setWordFilter(f, el){
+  wFilter = f;
+  document.querySelectorAll('#page-manage .filter-chip').forEach(function(e){ e.classList.remove('on'); });
+  el.classList.add('on');
+  renderWordList();
+}
+function renderWordList(){
+  var q = ((document.getElementById('word-search')||{}).value || '').toLowerCase().trim();
+  var list = DB.words.filter(function(w){
+    if(q && w.e.toLowerCase().indexOf(q) < 0 && w.zh.indexOf(q) < 0) return false;
+    if(wFilter === 'weak') return isWeak(w.e);
+    if(wFilter === 'master') return isMastered(w.e);
+    if(wFilter === 'custom') return !!(DB.custom||[]).find(function(c){ return c.e === w.e; });
+    return true;
+  });
+  var el = document.getElementById('word-list');
+  if(!el) return;
+  if(!list.length){
+    el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px;">沒有符合條件的單字</div>';
+    return;
+  }
+  el.innerHTML = list.map(function(w){
+    var s = getStats(w.e);
+    var badge = isMastered(w.e) ? '<span class="badge-green">熟練</span>'
+      : isWeak(w.e) ? '<span class="badge-red">需加強</span>'
+      : (s.correct === 0 && s.wrong === 0) ? '<span class="badge-blue">新</span>' : '';
+    var isCustom = !!(DB.custom||[]).find(function(c){ return c.e === w.e; });
+    return '<div class="word-row">'
+      + '<div style="flex:1;min-width:0">'
+        + '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+          + '<span class="word-en">'+esc(w.e)+'</span>'+badge
+          + '<button class="tts-btn" style="padding:3px 9px;font-size:11px" onclick="speak(\''+w.e.replace(/'/g,"\\'")+'\',0.8)">🔊</button>'
+        + '</div>'
+        + '<div class="word-zh">'+esc(w.zh)+(w.pos?' <span style="color:var(--text3);font-size:11px;">'+esc(w.pos)+'</span>':'')+'</div>'
+      + '</div>'
+      + '<div style="text-align:right;font-size:11px;color:var(--text3);white-space:nowrap">✅'+s.correct+' ❌'+s.wrong+'</div>'
+      + '<div style="margin-left:8px">'+(isCustom?'<button class="icon-btn" onclick="deleteWord(\''+w.e.replace(/'/g,"\\'")+'\')">刪除</button>':'')+'</div>'
+      + '</div>';
+  }).join('');
+}
+function deleteWord(e){
+  if(!confirm('確定要刪除「'+e+'」嗎？')) return;
+  DB.custom = (DB.custom||[]).filter(function(w){ return w.e !== e; });
+  DB.words = DB.words.filter(function(w){ return w.e !== e || BUILTIN.find(function(b){ return b.e === e; }); });
+  saveDB(); updateTotalCount(); renderWordList();
+  showToast('已刪除「'+e+'」');
+}
+// ═══════════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════════
+function renderStats(){
+  var mastered = DB.words.filter(function(w){ return isMastered(w.e); }).length;
+  var weak = DB.words.filter(function(w){ return isWeak(w.e); }).length;
+  document.getElementById('s-total').textContent = DB.words.length;
+  document.getElementById('s-master').textContent = mastered;
+  document.getElementById('s-weak').textContent = weak;
+  document.getElementById('s-sessions').textContent = DB.sessions || 0;
+  document.getElementById('s-correct').textContent = DB.totalCorrect || 0;
+  document.getElementById('s-streak').textContent = DB.streakDays || 0;
+  document.getElementById('stats-date').textContent = '最後練習：' + (DB.lastDate || '還沒開始');
+
+  var wl = document.getElementById('weak-list');
+  var weakWords = DB.words.filter(function(w){ return isWeak(w.e); }).slice(0, 15);
+  wl.innerHTML = weakWords.length ? weakWords.map(function(w){
+    var s = getStats(w.e);
+    return '<div class="missed-item"><span class="missed-en">'+esc(w.e)+'</span>'
+      + '<span class="missed-zh">'+esc(w.zh)+'</span>'
+      + '<span style="font-size:11px;color:var(--text3)">✅'+s.correct+' ❌'+s.wrong+'</span>'
+      + '<button class="tts-btn" onclick="speak(\''+w.e.replace(/'/g,"\\'")+'\',0.8)">🔊</button></div>';
+  }).join('') : '<div style="color:var(--text3);font-size:13px;padding:10px 0">目前沒有需要加強的單字，繼續保持！</div>';
+
+  var re = document.getElementById('recent-errors');
+  re.innerHTML = (DB.recentErrors||[]).slice(0,10).map(function(r){
+    var w = DB.words.find(function(x){ return x.e === r.word; }) || {};
+    return '<div class="missed-item"><span class="missed-en">'+esc(r.word)+'</span>'
+      + '<span class="missed-zh">'+esc(w.zh||'')+'</span>'
+      + '<span style="font-size:11px;color:var(--text3)">'+esc(r.date)+'</span></div>';
+  }).join('') || '<div style="color:var(--text3);font-size:13px;padding:10px 0">還沒有錯誤紀錄</div>';
+}
+function confirmReset(){
+  if(confirm('確定要重置所有答題統計？（單字不會被刪除）')){
+    DB.stats = {}; DB.sessions = 0; DB.totalCorrect = 0; DB.totalWrong = 0; DB.recentErrors = [];
+    saveDB(); renderStats(); showToast('統計資料已重置');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════
+function exportData(){
+  var payload = {
+    version: 3,
+    exportedAt: new Date().toISOString(),
+    stats: DB.stats || {}, custom: DB.custom || [],
+    sessions: DB.sessions || 0, totalCorrect: DB.totalCorrect || 0,
+    totalWrong: DB.totalWrong || 0, streakDays: DB.streakDays || 0,
+    recentErrors: DB.recentErrors || [], settings: DB.settings || {}
+  };
+  var blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var d = new Date();
+  a.href = url;
+  a.download = 'abby_vocab_' + d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  var el = document.getElementById('export-info');
+  if(el) el.textContent = '已匯出：' + Object.keys(DB.stats||{}).length + ' 個單字紀錄、' + (DB.custom||[]).length + ' 個自訂單字';
+  showToast('✅ 匯出成功！請儲存 .json 檔案');
+}
+
+var _importPayload = null;
+function importData(input){
+  var file = input.files[0];
+  if(!file) return;
+  var info = document.getElementById('import-info');
+  if(info) info.textContent = '讀取中...';
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      var data = JSON.parse(e.target.result);
+      if(!data.stats && !data.custom){
+        if(info) info.textContent = '❌ 檔案格式不正確';
+        showToast('❌ 無法識別此檔案，請確認是正確的匯出檔');
+        input.value = ''; return;
+      }
+      _importPayload = data;
+      var content = document.getElementById('import-preview-content');
+      if(content){
+        content.innerHTML =
+          '<div>📅 匯出時間：' + (data.exportedAt ? new Date(data.exportedAt).toLocaleString('zh-TW') : '不明') + '</div>'
+          + '<div>📊 答題紀錄：' + Object.keys(data.stats||{}).length + ' 個單字</div>'
+          + '<div>➕ 自訂單字：' + (data.custom||[]).length + ' 個</div>'
+          + '<div>✅ 答對總數：' + (data.totalCorrect||0) + ' 次</div>'
+          + '<div>🎯 練習次數：' + (data.sessions||0) + ' 次</div>';
+      }
+      document.getElementById('import-preview').style.display = 'block';
+      if(info) info.textContent = '檔案：' + file.name;
+    } catch(err){
+      if(info) info.textContent = '❌ 檔案讀取失敗';
+      showToast('❌ 檔案格式錯誤，請確認是正確的 .json 檔案');
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+function confirmImport(){
+  if(!_importPayload){ showToast('沒有待匯入的資料'); return; }
+  var data = _importPayload;
+  DB.stats = Object.assign({}, DB.stats||{}, data.stats||{});
+  var existing = (DB.custom||[]).map(function(w){ return w.e; });
+  (data.custom||[]).forEach(function(w){
+    if(existing.indexOf(w.e) < 0){
+      DB.custom = DB.custom || [];
+      DB.custom.push(w);
+      if(!DB.words.find(function(x){ return x.e === w.e; })) DB.words.push(w);
+    }
+  });
+  DB.sessions = Math.max(DB.sessions||0, data.sessions||0);
+  DB.totalCorrect = Math.max(DB.totalCorrect||0, data.totalCorrect||0);
+  DB.totalWrong = Math.max(DB.totalWrong||0, data.totalWrong||0);
+  DB.streakDays = Math.max(DB.streakDays||0, data.streakDays||0);
+  DB.recentErrors = (data.recentErrors||[]).concat(DB.recentErrors||[]).slice(0,30);
+  saveDB(); updateTotalCount();
+  _importPayload = null;
+  document.getElementById('import-preview').style.display = 'none';
+  renderStats();
+  showToast('✅ 匯入成功！學習紀錄已同步');
+}
+function cancelImport(){
+  _importPayload = null;
+  document.getElementById('import-preview').style.display = 'none';
+  document.getElementById('import-info').textContent = '';
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+loadDB();
+if(!ttsSupported){
+  var tb = document.getElementById('tts-status');
+  if(tb) tb.textContent = '❌ 不支援語音';
+}
+// iOS / Chrome：第一次點畫面時解鎖語音
+document.addEventListener('click', function unlock(){
+  if(ttsSupported){ try { window.speechSynthesis.resume(); } catch(e){} }
+  document.removeEventListener('click', unlock);
+}, {once:true});
+window.addEventListener('beforeunload', function(){ stopSpeak(); });
+</script>
+</body>
+</html>
