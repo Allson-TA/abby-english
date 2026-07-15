@@ -402,6 +402,12 @@ hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
         <div class="filter-chip" id="wf-custom" onclick="setWordFilter('custom',this)">自己新增</div>
       </div>
       <div class="word-list" id="word-list"></div>
+      <div id="del-all-row" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+        <button class="btn btn-sm" style="color:var(--red-text);border-color:var(--red);" onclick="deleteAllCustom()">
+          🗑️ 清空我自己新增的單字（<span id="custom-count">0</span> 個）
+        </button>
+        <div class="form-help">只會刪掉你自己加的字，內建的 135 個字和練習紀錄都不會動。</div>
+      </div>
     </div>
   </div>
 
@@ -1677,6 +1683,12 @@ function renderWordList(){
   });
   var el = document.getElementById('word-list');
   if(!el) return;
+  // 有自訂單字才顯示「清空」按鈕
+  var customCount = (DB.custom||[]).length;
+  var delRow = document.getElementById('del-all-row');
+  if(delRow) delRow.style.display = customCount ? '' : 'none';
+  var cntEl = document.getElementById('custom-count');
+  if(cntEl) cntEl.textContent = customCount;
   if(!list.length){
     el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px;">沒有符合條件的單字</div>';
     return;
@@ -1706,6 +1718,18 @@ function deleteWord(e){
   DB.words = DB.words.filter(function(w){ return w.e !== e || BUILTIN.find(function(b){ return b.e === e; }); });
   saveDB(); updateTotalCount(); renderWordList();
   showToast('已刪除「'+e+'」');
+}
+// 全部刪除：只清自訂單字，內建單字與練習紀錄都保留
+function deleteAllCustom(){
+  var list = (DB.custom||[]).map(function(w){ return w.e; });
+  if(!list.length){ showToast('目前沒有自己新增的單字'); return; }
+  var preview = list.slice(0,10).join('、') + (list.length > 10 ? ' ...等' : '');
+  if(!confirm('確定要刪除全部 ' + list.length + ' 個「自己新增」的單字嗎？\n\n'
+    + preview + '\n\n內建的單字不會被刪除，練習紀錄也會保留。\n這個動作沒辦法復原。')) return;
+  DB.custom = [];
+  DB.words = DB.words.filter(function(w){ return !!BUILTIN.find(function(b){ return b.e === w.e; }); });
+  saveDB(); updateTotalCount(); renderWordList();
+  showToast('已刪除 ' + list.length + ' 個自訂單字');
 }
 // ═══════════════════════════════════════════════════════
 // STATS
