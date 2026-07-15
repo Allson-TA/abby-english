@@ -453,9 +453,19 @@ hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
         <div id="import-preview" style="display:none;margin-top:12px;padding:12px;background:var(--yellow-bg);border:1px solid #fcd34d;border-radius:var(--radius-sm);">
           <div style="font-size:13px;font-weight:600;color:var(--yellow-text);margin-bottom:6px;">📋 匯入預覽</div>
           <div id="import-preview-content" style="font-size:13px;color:var(--text2);"></div>
-          <div style="display:flex;gap:8px;margin-top:10px;">
-            <button class="btn btn-blue btn-sm" onclick="confirmImport()">確認匯入</button>
-            <button class="btn btn-sm" onclick="cancelImport()">取消</button>
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid #fcd34d;">
+            <div style="font-size:12px;font-weight:600;color:var(--yellow-text);margin-bottom:8px;">要匯入哪些東西？</div>
+            <button class="btn btn-blue" style="width:100%;margin-bottom:6px;" onclick="confirmImport('words')">📖 只匯入單字</button>
+            <div class="form-help" style="margin:0 0 12px;">
+              只把檔案裡的單字加進來，<b>你自己的答題紀錄完全不會變動</b>。<br>
+              👉 別人分享單字給你時，用這個。
+            </div>
+            <button class="btn" style="width:100%;margin-bottom:6px;" onclick="confirmImport('all')">🔄 連答題紀錄一起匯入</button>
+            <div class="form-help" style="margin:0 0 12px;">
+              ⚠️ 會用檔案裡的紀錄<b>覆蓋</b>你目前的練習紀錄。<br>
+              👉 只有在「換手機、要把自己的進度搬過來」時才用。
+            </div>
+            <button class="btn btn-sm" style="width:100%;" onclick="cancelImport()">取消</button>
           </div>
         </div>
       </div>
@@ -1796,28 +1806,48 @@ function importData(input){
   };
   reader.readAsText(file);
 }
-function confirmImport(){
+// mode: 'words' = 只加單字，不動任何答題紀錄（別人分享單字給你時用）
+//       'all'   = 連答題紀錄一起蓋過來（自己換裝置搬進度時用）
+function confirmImport(mode){
   if(!_importPayload){ showToast('沒有待匯入的資料'); return; }
   var data = _importPayload;
-  DB.stats = Object.assign({}, DB.stats||{}, data.stats||{});
+  var withStats = (mode === 'all');
+
+  if(withStats){
+    var mine = Object.keys(DB.stats||{}).length;
+    if(mine > 0 && !confirm(
+      '這會用檔案裡的答題紀錄，覆蓋你目前 ' + mine + ' 個單字的練習紀錄。\n\n'
+      + '如果你只是想拿對方的單字，請改按「只匯入單字」。\n\n確定要覆蓋嗎？')) return;
+  }
+
+  // 單字一律「只新增、不覆蓋」——兩種模式都一樣安全
+  var added = [];
   var existing = (DB.custom||[]).map(function(w){ return w.e; });
   (data.custom||[]).forEach(function(w){
-    if(existing.indexOf(w.e) < 0){
-      DB.custom = DB.custom || [];
-      DB.custom.push(w);
-      if(!DB.words.find(function(x){ return x.e === w.e; })) DB.words.push(w);
-    }
+    if(!w || !w.e) return;
+    if(existing.indexOf(w.e) >= 0) return;
+    if(DB.words.find(function(x){ return x.e === w.e; })) return;   // 內建已有就跳過
+    DB.custom = DB.custom || [];
+    DB.custom.push(w); DB.words.push(w); existing.push(w.e); added.push(w.e);
   });
-  DB.sessions = Math.max(DB.sessions||0, data.sessions||0);
-  DB.totalCorrect = Math.max(DB.totalCorrect||0, data.totalCorrect||0);
-  DB.totalWrong = Math.max(DB.totalWrong||0, data.totalWrong||0);
-  DB.streakDays = Math.max(DB.streakDays||0, data.streakDays||0);
-  DB.recentErrors = (data.recentErrors||[]).concat(DB.recentErrors||[]).slice(0,30);
+
+  if(withStats){
+    DB.stats = Object.assign({}, DB.stats||{}, data.stats||{});
+    DB.sessions = Math.max(DB.sessions||0, data.sessions||0);
+    DB.totalCorrect = Math.max(DB.totalCorrect||0, data.totalCorrect||0);
+    DB.totalWrong = Math.max(DB.totalWrong||0, data.totalWrong||0);
+    DB.streakDays = Math.max(DB.streakDays||0, data.streakDays||0);
+    DB.recentErrors = (data.recentErrors||[]).concat(DB.recentErrors||[]).slice(0,30);
+  }
+
   saveDB(); updateTotalCount();
   _importPayload = null;
   document.getElementById('import-preview').style.display = 'none';
-  renderStats();
-  showToast('✅ 匯入成功！學習紀錄已同步');
+  document.getElementById('import-info').textContent = '';
+  renderStats(); renderWordList();
+  showToast(withStats
+    ? '✅ 已匯入單字與答題紀錄'
+    : '✅ 已加入 ' + added.length + ' 個新單字，你的練習紀錄沒有變動');
 }
 function cancelImport(){
   _importPayload = null;
